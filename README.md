@@ -77,9 +77,23 @@ capture a new app.
 | Project | Screenshots | Why |
 |---|---|---|
 | Sentro | 4, captured | Its dev seed builds a synthetic book of business — every contact is marked `Demo` with an `@example.ph` address. Safe to publish. |
+| EA Builders | 4, captured | Only via the built-in mock adapter — see the warning below. |
 | Croma MNL | Public site only | The POS is an Apps Script app behind a Google login, so its screens have to come from a signed-in session. |
-| EA Builders | None | The marketing half is still placeholder content, and `/admin` needs a staff code against a backend holding **real employee and payroll records**. Needs a demo tenant before anything can be published. |
-| Kaha | None | Still in development. |
+| Kaha | None | Its API needs a real Postgres and has no mock mode. The `kaha` entry in `capture.mjs` has the commands; uncomment its shots once a database is up. |
+
+### EA Builders: start the dev server in demo mode
+
+Its `getPortal()` falls through to an in-memory mock adapter when no backend is
+configured, and every person in that fixture is named "Demo Something". Start it with
+those two variables blank so the shell overrides `.env.local`:
+
+```bash
+PORTAL_API_URL= PORTAL_API_SECRET= npm run dev
+```
+
+**Never capture this app against its real backend.** `/admin` talks to a system holding
+actual employee and payroll records. Confirm the "Demo mode — no backend configured"
+banner appears on `/admin` before shooting anything.
 
 Two rules worth keeping:
 

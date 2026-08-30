@@ -33,8 +33,10 @@ const APPS = {
     /** Dev-seed credentials, published in that repo's README. Local only. */
     login: {
       path: '/login',
-      email: 'admin@northstar.ph',
-      password: 'advisor-dev-2026',
+      fields: [
+        { selector: 'input[type="email"], input[name="email"]', value: 'admin@northstar.ph' },
+        { selector: 'input[type="password"], input[name="password"]', value: 'advisor-dev-2026' },
+      ],
     },
     // Deliberately no /policies shot: the seeded product names are real
     // insurer trademarks, and publishing them would imply a partnership.
@@ -55,14 +57,53 @@ const APPS = {
     shots: [{ file: 'cover.png', path: '/', wait: 2500 }],
   },
 
-  // Intentionally has no shots. The marketing half of this app is still
-  // placeholder content, and /admin needs a staff code against a backend
-  // holding real employee and payroll records — not something to publish.
-  // Add shots here once there is a demo tenant to point at.
+  // Start this one's dev server with PORTAL_API_URL and PORTAL_API_SECRET blank:
+  //
+  //   PORTAL_API_URL= PORTAL_API_SECRET= npm run dev
+  //
+  // That makes getPortal() fall through to its in-memory mock adapter, whose
+  // people are all named "Demo Something". Never capture this app against the
+  // real backend — it holds actual employee and payroll records.
   'ea-builders': {
     base: 'http://localhost:3000',
     out: 'src/content/projects/ea-builders',
-    shots: [],
+    login: {
+      path: '/admin',
+      fields: [{ selector: 'input[name=\"code\"]', value: '1234' }],
+    },
+    shots: [{ file: '03-admin.png', path: '/admin', wait: 2500 }],
+  },
+
+  // The client-facing half, which the fixture actually populates: milestones,
+  // site photos, documents and a payment schedule. Same dev server as above,
+  // but it signs in with the project's own access code rather than a staff one.
+  'ea-builders-portal': {
+    base: 'http://localhost:3000',
+    out: 'src/content/projects/ea-builders',
+    login: {
+      path: '/portal/lakeview-2f9a4c',
+      fields: [{ selector: 'input[name=\"code\"]', value: '481902' }],
+    },
+    shots: [
+      { file: 'cover.png', path: '/portal/lakeview-2f9a4c', wait: 2500 },
+      { file: '01-timeline.png', path: '/portal/lakeview-2f9a4c/timeline', wait: 2500 },
+      { file: '02-payments.png', path: '/portal/lakeview-2f9a4c/payments', wait: 2500 },
+    ],
+  },
+  // Ready to go, but needs a database first. Kaha's API requires a real
+  // Postgres (DATABASE_URL) — there is no embedded or mock mode. Once you have
+  // one running, from the kaha repo:
+  //
+  //   pnpm db:bootstrap && pnpm migrate && pnpm seed
+  //   pnpm --filter @kaha/pos dev
+  //
+  // then uncomment the shots below and run: node scripts/capture.mjs kaha
+  kaha: {
+    base: 'http://localhost:5173',
+    out: 'src/content/projects/kaha',
+    shots: [
+      // { file: 'cover.png', path: '/', wait: 2500 },
+    ],
   },
 };
 
@@ -88,19 +129,18 @@ async function capture(name, app, browser) {
   try {
     if (app.login) {
       await page.goto(app.base + app.login.path, { waitUntil: 'networkidle2', timeout: 60_000 });
-      // Fill whatever the form calls its fields, then submit.
-      await page.evaluate(({ email, password }) => {
-        const set = (el, v) => {
-          if (!el) return;
-          const setter = Object.getOwnPropertyDescriptor(
-            window.HTMLInputElement.prototype, 'value',
-          ).set;
-          setter.call(el, v);
+      // Set each field through the native setter so React sees the change.
+      await page.evaluate((fields) => {
+        const setter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype, 'value',
+        ).set;
+        for (const f of fields) {
+          const el = document.querySelector(f.selector);
+          if (!el) continue;
+          setter.call(el, f.value);
           el.dispatchEvent(new Event('input', { bubbles: true }));
-        };
-        set(document.querySelector('input[type="email"], input[name="email"]'), email);
-        set(document.querySelector('input[type="password"], input[name="password"]'), password);
-      }, app.login);
+        }
+      }, app.login.fields);
       await Promise.all([
         page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 60_000 }).catch(() => {}),
         page.evaluate(() => document.querySelector('form')?.requestSubmit()),
@@ -119,6 +159,10 @@ async function capture(name, app, browser) {
         continue;
       }
       await new Promise((r) => setTimeout(r, shot.wait ?? 1500));
+      if (shot.scrollTo) {
+        await page.evaluate((y) => window.scrollTo(0, y), shot.scrollTo);
+        await new Promise((r) => setTimeout(r, 900));
+      }
 
       const raw = await page.screenshot({ type: 'png', fullPage: shot.fullPage ?? false });
       const dest = path.join(app.out, shot.file);

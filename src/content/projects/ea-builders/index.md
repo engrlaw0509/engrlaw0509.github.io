@@ -56,6 +56,24 @@ stack:
   - Next.js
   - TypeScript
   - Tailwind CSS
+
+cover: ./cover.png
+gallery:
+  - src: ./01-timeline.png
+    alt: The client portal's timeline, listing every milestone from contract signing to turnover with planned and actual dates
+    caption: >-
+      Every milestone with the date it was planned for and the date it actually happened.
+      When something slips, the reason sits next to it rather than arriving as a phone call.
+  - src: ./02-payments.png
+    alt: The payment schedule, showing contract total, paid to date, outstanding balance and each milestone payment
+    caption: >-
+      What has been paid, what is owed, and what triggers the next invoice. The page states
+      plainly that it will never ask for card or bank details.
+  - src: ./03-admin.png
+    alt: The builder's own view, listing projects by stage alongside the staff roster and their sign-in codes
+    caption: >-
+      The builder's side: projects grouped by stage, and the roster where each person gets
+      their own sign-in code so every site update is correctly attributed.
 ---
 
 EA Builders came to us with no logo, no colours and no typeface — so the whole visual
