@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LMI Automata Labs</title>
+<meta name="description" content="A Manila software studio building the systems Philippine businesses run on — point of sale, practice management, client portals, and the ERP integrations that connect them.">
+<meta name="author" content="Lawrence Ignacio">
+<link rel="canonical" href="https://engrlaw0509.github.io/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LMI Automata Labs">
+<meta property="og:description" content="A Manila software studio building the systems Philippine businesses run on.">
+<meta property="og:url" content="https://engrlaw0509.github.io/">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* ------------------------------------------------------------------
+   Tokens — a bookkeeper's ledger pad.
+   Light is the base. Dark redefines tokens only, in both the
+   un-stamped (prefers-color-scheme) and stamped ([data-theme]) states.
+   ------------------------------------------------------------------ */
+:root {
+  --paper:      #EDF1E9;
+  --surface:    #F7FAF4;
+  --ink:        #131A15;
+  --ink-2:      #4C574F;
+  --ink-3:      #5F6B65;  /* 4.9:1 on --paper — these labels are 10–11px, so they need full AA */
+  --rule:       #D0D9C9;
+  --rule-soft:  #DDE4D6;
+  --accent:     #17439E;
+  --accent-ink: #0F2F70;
+  --ochre:      #8F5410;
+  --live:       #1F6B3A;
+
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+  --measure: 64ch;
+  --rail: 8.5rem;
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --max: 68rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:      #0D120F;
+    --surface:    #151C17;
+    --ink:        #E9EEE7;
+    --ink-2:      #A3B0A7;
+    --ink-3:      #7E8B83;
+    --rule:       #26302A;
+    --rule-soft:  #1D2620;
+    --accent:     #8FAEFF;
+    --accent-ink: #B9CCFF;
+    --ochre:      #D6A15E;
+    --live:       #6FC08C;
+  }
+}
+:root[data-theme="dark"] {
+  --paper:      #0D120F;
+  --surface:    #151C17;
+  --ink:        #E9EEE7;
+  --ink-2:      #A3B0A7;
+  --ink-3:      #7E8B83;
+  --rule:       #26302A;
+  --rule-soft:  #1D2620;
+  --accent:     #8FAEFF;
+  --accent-ink: #B9CCFF;
+  --ochre:      #D6A15E;
+  --live:       #6FC08C;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  line-height: 1.62;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+a:hover { color: var(--accent-ink); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.skip {
+  position: absolute; left: -9999px; top: 0;
+  background: var(--accent); color: #fff; padding: 0.6rem 1rem;
+  font-family: var(--f-mono); font-size: 0.8125rem; z-index: 50;
+}
+.skip:focus { left: 0; }
+
+/* ---------------- ledger frame ---------------- */
+.sheet {
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem 2rem;
+}
+/* The hero's margin ticks are a ledger-rail device. Below the breakpoint
+   there is no rail, and they would just repeat the eyebrow underneath. */
+.hero > .margin { display: none; }
+
+@media (min-width: 62rem) {
+  .row {
+    grid-template-columns: var(--rail) minmax(0, 1fr);
+    gap: 0 2.75rem;
+  }
+  .row > .margin { border-right: 1px solid var(--rule); padding-right: 1.25rem; text-align: right; }
+  .hero > .margin { display: block; }
+}
+
+.margin {
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding-top: 0.45rem;
+}
+.margin .tick { display: block; }
+.margin .tick + .tick { margin-top: 0.35rem; }
+
+hr.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+hr.rule-soft { border-top-color: var(--rule-soft); }
+
+/* ---------------- masthead ---------------- */
+.masthead {
+  padding-block: 1.1rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.masthead strong { color: var(--ink); font-weight: 500; letter-spacing: 0.1em; }
+.masthead nav { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+.masthead nav a { color: var(--ink-3); text-decoration: none; }
+.masthead nav a:hover { color: var(--accent); text-decoration: underline; }
+
+/* ---------------- hero ---------------- */
+.hero { padding-block: clamp(3rem, 9vw, 6.5rem) clamp(2.5rem, 6vw, 4rem); }
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.19em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 1.4rem;
+}
+
+h1 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(2.35rem, 1.1rem + 5.4vw, 4.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+  margin: 0 0 1.6rem;
+  max-width: 17ch;
+}
+h1 em { font-style: normal; color: var(--accent); }
+
+.lede {
+  font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  line-height: 1.58;
+  color: var(--ink-2);
+  max-width: var(--measure);
+  margin: 0 0 2.25rem;
+}
+.lede strong { color: var(--ink); font-weight: 600; }
+
+/* ledger header strip */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin: 0;
+}
+.strip div {
+  padding: 0.85rem 1rem 0.9rem 0;
+  border-right: 1px solid var(--rule-soft);
+}
+.strip div:last-child { border-right: 0; }
+.strip dt {
+  font-family: var(--f-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.35rem;
+}
+.strip dd {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+/* ---------------- sections ---------------- */
+section { padding-block: clamp(3rem, 7vw, 5rem); }
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin: 0 0 0.9rem;
+}
+.section-note {
+  color: var(--ink-2);
+  max-width: var(--measure);
+  margin: 0 0 2.5rem;
+}
+
+/* ---------------- register entries ---------------- */
+.entry { padding-block: clamp(2rem, 4vw, 2.75rem); }
+.entry:first-of-type { padding-top: 0.5rem; }
+
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+.entry h3 {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(1.45rem, 1.2rem + 1.1vw, 2rem);
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0;
+}
+.entry .kind {
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.9rem;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid currentColor;
+  color: var(--ochre);
+  white-space: nowrap;
+}
+.status.is-live { color: var(--live); }
+.status::before {
+  content: "";
+  width: 0.4rem; height: 0.4rem;
+  background: currentColor;
+  flex: none;
+}
+
+.entry .summary {
+  font-size: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  line-height: 1.55;
+  max-width: var(--measure);
+  margin: 0 0 1.4rem;
+}
+.entry .detail {
+  color: var(--ink-2);
+  max-width: var(--measure);
+  margin: 0 0 1.1rem;
+}
+.entry .detail:last-of-type { margin-bottom: 1.5rem; }
+
+/* figures pulled out of the ledger */
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2.5rem;
+  margin: 0 0 1.5rem;
+  border-top: 1px solid var(--rule-soft);
+}
+.figures > div { padding-top: 0.8rem; }
+.figures .n {
+  display: block;
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 1.3rem + 0.9vw, 2rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--accent);
+}
+.figures .l {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-top: 0.4rem;
+}
+
+.stack {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.5rem;
+  margin: 0;
+  padding: 0;
+}
+.stack li {
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  color: var(--ink-2);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  padding: 0.25rem 0.5rem;
+}
+
+/* ---------------- capability list ---------------- */
+.caps { display: grid; gap: 0; }
+.cap { padding-block: 1.6rem; border-top: 1px solid var(--rule-soft); }
+.cap:first-child { border-top: 0; padding-top: 0.25rem; }
+.cap h3 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+  margin: 0 0 0.4rem;
+}
+.cap p { margin: 0; color: var(--ink-2); max-width: var(--measure); }
+
+/* ---------------- principles ---------------- */
+.principles { display: grid; gap: 0; }
+.principle {
+  padding-block: 1.75rem;
+  border-top: 1px solid var(--rule-soft);
+  display: grid;
+  gap: 0.5rem;
+}
+.principle:first-child { border-top: 0; padding-top: 0.25rem; }
+.principle h3 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem);
+  letter-spacing: -0.015em;
+  margin: 0;
+  text-wrap: balance;
+}
+.principle p { margin: 0; color: var(--ink-2); max-width: var(--measure); }
+
+/* ---------------- contact ---------------- */
+.contact-grid {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--rule);
+}
+.contact-grid a {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.1rem 0;
+  border-bottom: 1px solid var(--rule-soft);
+  text-decoration: none;
+  color: var(--ink);
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+}
+.contact-grid a:hover,
+.contact-grid a:hover .where { color: var(--accent); }
+.contact-grid .where {
+  font-family: var(--f-mono);
+  font-weight: 400;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+/* ---------------- footer ---------------- */
+footer {
+  padding-block: 2.25rem 3rem;
+  font-family: var(--f-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#work">Skip to the work</a>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <strong>LMI Automata Labs</strong>
+    <nav aria-label="Sections">
+      <a href="#work">Work</a>
+      <a href="#integration">Integration</a>
+      <a href="#approach">Approach</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+  <hr class="rule">
+
+  <main>
+
+    <!-- ============ HERO ============ -->
+    <div class="hero row">
+      <div class="margin" aria-hidden="true">
+        <span class="tick">Manila</span>
+        <span class="tick">PH</span>
+      </div>
+      <div>
+        <p class="eyebrow">Software studio &middot; Metro Manila, Philippines</p>
+        <h1>Business software that knows how business works <em>here</em>.</h1>
+        <p class="lede">
+          A sales invoice has to satisfy the BIR. Half the payments arrive by e&#8209;wallet.
+          The receipt prints on 58&nbsp;mm thermal paper over Bluetooth, and the connection drops
+          twice a day. <strong>LMI Automata Labs builds the systems Philippine businesses actually
+          run on</strong> &mdash; point of sale, practice management, client portals &mdash; along with
+          the ERP integration and automation that ties them to everything else.
+        </p>
+        <dl class="strip">
+          <div>
+            <dt>Products</dt>
+            <dd>4 built &amp; building</dd>
+          </div>
+          <div>
+            <dt>Sectors</dt>
+            <dd>Retail, insurance, construction</dd>
+          </div>
+          <div>
+            <dt>Also</dt>
+            <dd>NetSuite &amp; AI automation</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <hr class="rule">
+
+    <!-- ============ WORK ============ -->
+    <section id="work" class="row">
+      <div class="margin" aria-hidden="true"><span class="tick">01 &mdash; Register</span></div>
+      <div>
+        <h2>The register</h2>
+        <p class="section-note">
+          Four products, each built for a business that had outgrown the spreadsheet it was being run on.
+          Status is stated plainly &mdash; what is running today, and what is still being built.
+        </p>
+
+        <!-- CROMA -->
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Croma MNL</h3>
+            <span class="status is-live">In production</span>
+          </div>
+          <p class="kind">Specialty coffee &middot; retail operations</p>
+          <p class="summary">
+            The whole operating system for a Manila specialty coffee company: a point of sale, a
+            members&rsquo; app, the public website, and a native Android shell that prints its own receipts.
+          </p>
+          <div class="figures">
+            <div><span class="n">163</span><span class="l">Server endpoints</span></div>
+            <div><span class="n">14,136</span><span class="l">Lines in the POS</span></div>
+            <div><span class="n">43</span><span class="l">Test scripts</span></div>
+            <div><span class="n">4</span><span class="l">Connected surfaces</span></div>
+          </div>
+          <p class="detail">
+            The point of sale covers BIR&#8209;style invoicing, recipe&#8209;level inventory that draws down
+            by ingredient as drinks are made, payroll, shift handovers and Z&#8209;readings. The Android
+            wrapper speaks ESC/POS over Bluetooth itself, which retired a paid third&#8209;party print
+            service and its subscription along with it.
+          </p>
+          <p class="detail">
+            It is now being rebuilt on managed Postgres in Singapore. The spreadsheet backend it started
+            on was dropping roughly one request in three on a bad afternoon, and no amount of retry logic
+            fixes a data layer that was never meant to carry a shop floor.
+          </p>
+          <ul class="stack">
+            <li>Apps Script</li><li>React PWA</li><li>Capacitor</li><li>Kotlin</li><li>Supabase Postgres</li>
+          </ul>
+        </article>
+
+        <hr class="rule rule-soft">
+
+        <!-- SENTRO -->
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Sentro</h3>
+            <span class="status">In development</span>
+          </div>
+          <p class="kind">Insurance &middot; financial advisor practice management</p>
+          <p class="summary">
+            One platform for a financial advisor&rsquo;s whole practice, in three parts: the agent&rsquo;s
+            portal, a client&#8209;facing policy portal, and an admin console for the insurer catalogue
+            and billing.
+          </p>
+          <p class="detail">
+            Sold by subscription to advisors whatever insurer they write for, so the product stays
+            insurer&#8209;agnostic while wearing each agency&rsquo;s own branding. A client can log in and
+            see their own policies without going through their agent for a PDF.
+          </p>
+          <p class="detail">
+            Multi&#8209;tenancy is structural rather than remembered. Every database read takes an
+            authenticated scope as its first argument, and a record belonging to another agency comes
+            back <em>not found</em> rather than <em>forbidden</em> &mdash; because a 403 confirms the
+            record exists, and that is already a leak.
+          </p>
+          <ul class="stack">
+            <li>Next.js</li><li>TypeScript</li><li>Postgres</li><li>Kysely</li><li>Argon2id</li>
+          </ul>
+        </article>
+
+        <hr class="rule rule-soft">
+
+        <!-- KAHA -->
+        <article class="entry">
+          <div class="entry-head">
+            <h3>Kaha</h3>
+            <span class="status">In development</span>
+          </div>
+          <p class="kind">Food &amp; beverage &middot; multi&#8209;branch point of sale</p>
+          <p class="summary">
+            A cafe point of sale built to run more than one cafe &mdash; offline&#8209;tolerant,
+            multi&#8209;tenant, and configurable down to a single terminal.
+          </p>
+          <p class="detail">
+            One cafe can never reach another cafe&rsquo;s records, and that is enforced by the database
+            itself through row&#8209;level security &mdash; a physical impossibility rather than a promise
+            that every piece of code remembered its filter.
+          </p>
+          <p class="detail">
+            Prices are held in exact centavos with the VAT split a BIR invoice has to report, so the
+            arithmetic on the receipt matches the arithmetic in the books. When the connection drops,
+            sales queue on the device and settle the moment it returns &mdash; the queue closes with the
+            till, not with the internet.
+          </p>
+          <ul class="stack">
+            <li>TypeScript</li><li>Hono</li><li>Postgres 16</li><li>Drizzle</li><li>React PWA</li><li>Railway</li>
+          </ul>
+        </article>
+
+        <hr class="rule rule-soft">
+
+        <!-- EA BUILDERS -->
+        <article class="entry">
+          <div class="entry-head">
+            <h3>EA Builders</h3>
+            <span class="status">In development</span>
+          </div>
+          <p class="kind">Construction &middot; design&#8209;and&#8209;build management</p>
+          <p class="summary">
+            The public site that wins the enquiry, and the client portal the customer lives in for the
+            eighteen months afterwards.
+          </p>
+          <p class="detail">
+            The homepage forks into residential and commercial, because the two ask completely different
+            questions before they call. Behind the login: the project timeline, site photographs, drawings
+            and documents, and the payment schedule &mdash; so a client can check where their build stands
+            on a Sunday evening instead of ringing the office on Monday.
+          </p>
+          <p class="detail">
+            The company had no logo, no palette and no typeface when the work started. The whole visual
+            identity was designed from nothing alongside the build.
+          </p>
+          <ul class="stack">
+            <li>Next.js 16</li><li>TypeScript</li><li>Tailwind CSS v4</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- ============ INTEGRATION ============ -->
+    <section id="integration" class="row">
+      <div class="margin" aria-hidden="true"><span class="tick">02 &mdash; Services</span></div>
+      <div>
+        <h2>Integration &amp; automation</h2>
+        <p class="section-note">
+          Not every problem needs a new product. A good deal of the work is making the systems a business
+          already paid for talk to each other &mdash; and taking the manual steps out from between them.
+        </p>
+        <div class="caps">
+          <div class="cap">
+            <h3>ERP integration</h3>
+            <p>
+              Continuous one&#8209;way sync from on&#8209;premise and cloud retail systems into NetSuite:
+              field mapping agreed with the client up front, a full audit trail of every record moved, and
+              a web console they can watch it run from.
+            </p>
+          </div>
+          <div class="cap">
+            <h3>NetSuite development</h3>
+            <p>
+              SuiteScript, SDF projects, and approval workflows for purchasing, vendor bills and journals.
+              Including a transaction&#8209;tree tool that traces every dependency behind a record before
+              deleting it &mdash; with deliberate limits on how far it will go, because the alternative is
+              a very fast mistake.
+            </p>
+          </div>
+          <div class="cap">
+            <h3>Workflow &amp; AI automation</h3>
+            <p>
+              Pipelines that carry work between the tools a team already uses, with language&#8209;model
+              steps where judgement is needed &mdash; reading documents, classifying, drafting. Aimed at
+              the tasks that stayed manual only because nobody had time to automate them.
+            </p>
+          </div>
+          <div class="cap">
+            <h3>Data migration</h3>
+            <p>
+              Moving a live business off spreadsheets and onto a real database without closing for the day.
+              Verified row by row against the original before anything is switched over, and reversible
+              until it is.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- ============ APPROACH ============ -->
+    <section id="approach" class="row">
+      <div class="margin" aria-hidden="true"><span class="tick">03 &mdash; Approach</span></div>
+      <div>
+        <h2>How the work is built</h2>
+        <p class="section-note">
+          Three commitments that show up in every codebase above, because in this market they are not
+          optional extras.
+        </p>
+        <div class="principles">
+          <div class="principle">
+            <h3>Compliance is a feature, not paperwork bolted on at the end.</h3>
+            <p>
+              Invoice numbering, the VAT split, Z&#8209;readings and the 58&nbsp;mm receipt layout are
+              designed in from the first schema. Retrofitting BIR requirements onto a finished system means
+              rewriting the parts that touch money, which is all of them.
+            </p>
+          </div>
+          <div class="principle">
+            <h3>Separation between tenants is proven, not promised.</h3>
+            <p>
+              Where several businesses share one system, isolation is enforced by the database or by types
+              that cannot be sidestepped &mdash; and there are tests that run against a real database to
+              demonstrate it. &ldquo;Every query remembers its filter&rdquo; is a hope, not a control.
+            </p>
+          </div>
+          <div class="principle">
+            <h3>It has to keep working on a bad connection.</h3>
+            <p>
+              Anything used on a shop floor assumes the network will fail mid&#8209;transaction, because
+              here it does. Work queues locally and settles when the line comes back, rather than showing a
+              spinner to a customer standing at the counter with cash in hand.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <!-- ============ CONTACT ============ -->
+    <section id="contact" class="row">
+      <div class="margin" aria-hidden="true"><span class="tick">04 &mdash; Contact</span></div>
+      <div>
+        <h2>Start a conversation</h2>
+        <p class="section-note">
+          If your business has outgrown the spreadsheet it has been run on, that is the usual starting
+          point. Tell me what the day looks like now and where it breaks.
+        </p>
+        <div class="contact-grid">
+          <a href="https://www.linkedin.com/in/lawrence-ignacio-97ba0013a/" rel="noopener">
+            <span>Lawrence Ignacio on LinkedIn</span>
+            <span class="where">linkedin.com &rarr;</span>
+          </a>
+          <a href="https://github.com/engrlaw0509" rel="noopener">
+            <span>Code and open work on GitHub</span>
+            <span class="where">github.com/engrlaw0509 &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <hr class="rule">
+  <footer>
+    <span>LMI Automata Labs &middot; Metro Manila</span>
+    <span>Lawrence Ignacio</span>
+  </footer>
+
+</div>
+</body>
+</html>
