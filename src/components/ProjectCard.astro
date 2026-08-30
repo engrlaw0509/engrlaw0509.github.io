@@ -1,0 +1,130 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  /** The first card on the homepage runs wide and eager-loads. */
+  featured?: boolean;
+}
+
+const { project, featured = false } = Astro.props;
+const { name, sector, summary, status, cover } = project.data;
+const href = `/work/${project.id}/`;
+const live = status === 'production';
+---
+
+<article class:list={['card', featured && 'is-featured']}>
+  <a class="card-link" href={href}>
+    <div class="shot card-shot">
+      {cover ? (
+        <Image
+          src={cover}
+          alt={`${name} — product screenshot`}
+          widths={[420, 720, 1100]}
+          sizes={featured ? '(min-width: 62rem) 44rem, 92vw' : '(min-width: 62rem) 22rem, 92vw'}
+          loading={featured ? 'eager' : 'lazy'}
+        />
+      ) : (
+        <div class="placeholder" role="img" aria-label={`${name} — screenshot not yet available`}>
+          <span class="placeholder-name">{name}</span>
+          <span class="placeholder-note">Screenshot coming</span>
+        </div>
+      )}
+    </div>
+
+    <div class="card-body">
+      <div class="card-head">
+        <h3 class="card-name">{name}</h3>
+        <span class:list={['status', live && 'is-live']}>
+          {live ? 'In production' : 'In development'}
+        </span>
+      </div>
+      <p class="card-sector">{sector}</p>
+      <p class="card-summary">{summary}</p>
+      <span class="card-more">See the project <span aria-hidden="true">&rarr;</span></span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .card { display: flex; }
+  .card-link {
+    display: grid;
+    gap: 1.1rem;
+    align-content: start;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+  }
+  .card-shot { transition: border-color 160ms ease, box-shadow 160ms ease; }
+  .card-link:hover .card-shot { border-color: var(--accent); }
+
+  .card-shot :global(img) {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: top center;
+  }
+  .is-featured .card-shot :global(img) { aspect-ratio: 16 / 9; }
+
+  .placeholder {
+    aspect-ratio: 16 / 10;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 0.5rem;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 1.75rem,
+        var(--rule-soft) 1.75rem calc(1.75rem + 1px)
+      ),
+      var(--surface);
+  }
+  .is-featured .placeholder { aspect-ratio: 16 / 9; }
+  .placeholder-name {
+    font-family: var(--f-display);
+    font-weight: 800;
+    font-size: clamp(1.35rem, 1.1rem + 1vw, 2rem);
+    letter-spacing: -0.03em;
+    color: var(--ink-2);
+  }
+  .placeholder-note {
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .card-body { display: grid; gap: 0.5rem; }
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .card-name {
+    font-weight: 800;
+    font-size: clamp(1.3rem, 1.15rem + 0.7vw, 1.75rem);
+    line-height: 1.05;
+  }
+  .card-link:hover .card-name { color: var(--accent); }
+  .card-sector {
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .card-summary { color: var(--ink-2); max-width: 46ch; }
+  .is-featured .card-summary { font-size: 1.0625rem; max-width: 54ch; }
+  .card-more {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--accent);
+    margin-top: 0.15rem;
+  }
+</style>

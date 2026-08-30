@@ -1,65 +1,125 @@
 # engrlaw0509.github.io
 
-The public portfolio site for **LMI Automata Labs** — a Manila software studio.
+The marketing site for **LMI Automata Labs** — a Manila software studio.
 
 Live at <https://engrlaw0509.github.io/>.
 
-## What this is
+Built with [Astro](https://astro.build). Pushing to `main` builds and deploys it via
+GitHub Actions; there is nothing to run by hand.
 
-A single static page. No build step, no dependencies, no framework. `index.html`
-carries its own CSS and one small script; the only external request is the Google
-Fonts stylesheet. Edit the file, commit, push — GitHub Pages redeploys within a
-minute or two.
-
-```
-index.html     The entire site — content, styles, and the scroll reveal.
-favicon.svg    Ledger mark, also the source for the tab icon.
-.nojekyll      Tells Pages to serve the files as-is, skipping Jekyll.
-CNAME          (absent) Add this when pointing a custom domain here.
+```bash
+npm install
+npm run dev      # http://localhost:4321
+npm run build    # writes dist/
+npm run preview  # serve dist/ exactly as it will be deployed
 ```
 
-## Editing it
+---
 
-Everything a person reads lives between `<body>` and `</body>`, in four sections:
+## Adding a project
 
-| Section | `id` | What it holds |
+One project is one folder. Nothing outside it needs editing — the homepage, the
+`/work/` index and the project's own page all pick it up automatically.
+
+```
+src/content/projects/<slug>/
+  index.md          the copy and metadata
+  cover.png         card image and page hero
+  01-something.png  gallery images
+```
+
+The folder name becomes the URL: `src/content/projects/kaha/` → `/work/kaha/`.
+
+Copy an existing `index.md` and change the fields. They are all defined and commented in
+[`src/content.config.ts`](src/content.config.ts), which is also what validates them — a
+missing or misspelled field fails the build with a message naming it, rather than
+shipping a broken page.
+
+The fields that matter most:
+
+| Field | Why it matters |
+|---|---|
+| `summary` | The one line on the card. Say what it does for the owner, not how it works. |
+| `problem` / `outcome` | Shown as **Before** and **After**. This is the part prospects actually read. |
+| `status` | `production` or `building`. Drives the chip and which section of `/work/` it lands in. |
+| `featured` | Puts it on the homepage. |
+| `order` | Sorts everything. Lower first. |
+| `highlights` | Three or four short proof points. More than four wraps badly. |
+
+Every gallery image needs `alt`. It is read aloud by screen readers and shown if the
+image fails, so describe what is in the picture rather than repeating the caption.
+
+### Writing the copy
+
+The site is written for business owners, not developers. Lead with the owner's problem
+and what changed; keep the technical detail to the `stack` list at the bottom. "Your
+Makati staff cannot see Ortigas's sales" beats "row-level security enforces tenant
+isolation" on this site, even though the second one is what makes the first true.
+
+---
+
+## Screenshots
+
+`scripts/capture.mjs` drives the Chrome already installed on this machine and writes
+screenshots straight into the project folders at 1800px wide.
+
+```bash
+node scripts/capture.mjs sentro     # that app's dev server must be running
+node scripts/capture.mjs            # everything configured
+```
+
+Each app is configured in the `APPS` object at the top of that file — its dev server
+port, where to write, an optional login, and the list of pages to shoot. Add an entry to
+capture a new app.
+
+**Current state, and it is deliberate:**
+
+| Project | Screenshots | Why |
 |---|---|---|
-| The register | `work` | One `<article class="entry">` per product |
-| Integration & automation | `integration` | One `<div class="cap">` per service |
-| How the work is built | `approach` | One `<div class="principle">` each |
-| Start a conversation | `contact` | Contact links |
+| Sentro | 4, captured | Its dev seed builds a synthetic book of business — every contact is marked `Demo` with an `@example.ph` address. Safe to publish. |
+| Croma MNL | Public site only | The POS is an Apps Script app behind a Google login, so its screens have to come from a signed-in session. |
+| EA Builders | None | The marketing half is still placeholder content, and `/admin` needs a staff code against a backend holding **real employee and payroll records**. Needs a demo tenant before anything can be published. |
+| Kaha | None | Still in development. |
 
-To add a product, copy an existing `<article class="entry">` block along with the
-`<hr class="rule rule-soft">` above it, and change the text. The `reveal` class is
-what fades it in on scroll — keep it.
+Two rules worth keeping:
 
-Status chips are `<span class="status">` for in-development, and
-`<span class="status is-live">` for shipped work. The green is deliberate: it should
-mean something, so only use it for systems a real business is using today.
+1. **Never publish a screenshot containing real customer or staff data.** Seed data
+   only. Check before adding a shot, not after.
+2. **Watch for third-party trademarks.** The `/policies` screen in Sentro was dropped
+   because the seeded product names are real insurer trademarks, and showing them
+   implies a partnership that does not exist.
 
-The four large numbers under Croma MNL come from that repository's own README
-(163 endpoints, 14,136 lines, 43 test scripts). If those change, change them here too
-— a portfolio figure that no longer matches the code is worse than no figure.
+Replacing any image is just dropping a better file over the old one and rebuilding.
 
-## Colours and type
+---
 
-Design tokens sit at the top of the `<style>` block, defined three times: once on
-bare `:root` for light, once under `prefers-color-scheme: dark`, and once under
-`[data-theme="dark"]`. Change a colour in all three or the page will only be right in
-one theme.
+## Design
 
-The palette is a bookkeeper's ledger pad — pale columnar green ground, blue-black ink,
-deep ledger blue for accents, ochre for in-progress status. Type is Archivo (display),
-Source Serif 4 (body), IBM Plex Mono (labels and data).
+Tokens live at the top of [`src/styles/global.css`](src/styles/global.css), defined three
+times: on bare `:root` for light, under `prefers-color-scheme: dark`, and under
+`[data-theme="dark"]`. **Change a colour in all three** or the page will only be right in
+one theme. Never write a colour anywhere else — that is how a page ends up with one
+theme's text on the other theme's background.
+
+The palette is a bookkeeper's ledger pad: pale columnar-green ground, blue-black ink,
+deep ledger blue for accents, ochre for in-progress status and green for shipped. Type is
+Archivo (display), Source Serif 4 (body) and IBM Plex Mono (labels).
+
+Every colour clears WCAG AA on both grounds. `--ink-3` in particular is darker than it
+looks like it should be, because the mono labels using it are 10–11px and get no
+large-text exemption.
+
+---
 
 ## Custom domain
 
-Add a file named `CNAME` containing just the domain, then point DNS at GitHub:
+Add `public/CNAME` containing just the domain, then point DNS at GitHub:
 
 ```
 lmiautomata.com
 ```
 
-For an apex domain, four `A` records: `185.199.108.153`, `185.199.109.153`,
-`185.199.110.153`, `185.199.111.153`. For `www`, a `CNAME` to `engrlaw0509.github.io`.
-Then enable **Enforce HTTPS** in Settings → Pages once the certificate is issued.
+Apex domain: four `A` records — `185.199.108.153`, `185.199.109.153`, `185.199.110.153`,
+`185.199.111.153`. For `www`, a `CNAME` to `engrlaw0509.github.io`. Then set `site` in
+[`astro.config.mjs`](astro.config.mjs) to the new address so canonical URLs and the
+sitemap follow, and turn on **Enforce HTTPS** in Settings → Pages.

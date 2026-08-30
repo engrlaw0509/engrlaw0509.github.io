@@ -1,0 +1,149 @@
+---
+import Base from '../layouts/Base.astro';
+
+const email = 'lmiautomatalabs@gmail.com';
+const subject = encodeURIComponent('Project enquiry');
+const body = encodeURIComponent(
+  [
+    'Hello,',
+    '',
+    'My business: ',
+    'What we do: ',
+    '',
+    'The part of the week that goes wrong:',
+    '',
+    '',
+    'What we use now (spreadsheets, apps, paper):',
+    '',
+    '',
+    'Thanks,',
+  ].join('\n'),
+);
+
+const prompts = [
+  'What takes the longest every week, and who does it?',
+  'What gets typed in more than once?',
+  'What breaks when the person who normally does it is away?',
+  'What do you wish you could see without asking anyone?',
+];
+---
+
+<Base
+  title="Contact"
+  description="Talk to LMI Automata Labs about software for your business. Metro Manila, Philippines."
+>
+  <section class="sheet head">
+    <div class="row">
+      <div class="margin" aria-hidden="true">Contact</div>
+      <div class="head-body">
+        <p class="eyebrow">Start here</p>
+        <h1 class="page-title">Tell us where the week goes wrong.</h1>
+        <p class="lede">
+          You do not need a specification, a budget, or the right words for it. The most useful
+          first message describes one job that takes too long and who has to do it.
+        </p>
+        <div class="cta-row">
+          <a class="btn" href={`mailto:${email}?subject=${subject}&body=${body}`}>
+            Email us
+          </a>
+          <a class="btn btn-ghost" href={`mailto:${email}`}>{email}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet block">
+    <hr class="rule" />
+    <div class="row block-inner">
+      <div class="margin" aria-hidden="true">Prompts</div>
+      <div>
+        <h2 class="section-title head-gap">If you are not sure what to write</h2>
+        <ul class="prompts">
+          {prompts.map((p) => <li>{p}</li>)}
+        </ul>
+        <p class="after">
+          Any one of those is enough to start. If it turns out software is not the answer, we
+          will say so — that conversation costs you nothing either way.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet block">
+    <hr class="rule" />
+    <div class="row block-inner">
+      <div class="margin" aria-hidden="true">Elsewhere</div>
+      <div>
+        <h2 class="section-title head-gap">Other ways to reach us</h2>
+        <div class="links">
+          <a href={`mailto:${email}`}>
+            <span>Email</span>
+            <span class="where">{email}</span>
+          </a>
+          <a href="https://www.linkedin.com/in/lawrence-ignacio-97ba0013a/" rel="noopener">
+            <span>Lawrence Ignacio on LinkedIn</span>
+            <span class="where">linkedin.com <span aria-hidden="true">&rarr;</span></span>
+          </a>
+          <a href="https://github.com/engrlaw0509" rel="noopener">
+            <span>Code on GitHub</span>
+            <span class="where">github.com/engrlaw0509 <span aria-hidden="true">&rarr;</span></span>
+          </a>
+        </div>
+        <p class="after">
+          Based in Metro Manila. We work with businesses across the Philippines, and remotely
+          for clients abroad.
+        </p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head { padding-block: clamp(2.75rem, 7vw, 4.5rem) clamp(2rem, 4vw, 3rem); }
+  .head-body { display: grid; gap: 1.25rem; justify-items: start; }
+  .page-title {
+    font-weight: 800;
+    font-size: clamp(2.1rem, 1.2rem + 3.6vw, 3.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    max-width: 17ch;
+  }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+  .block { padding-block: 0 clamp(2.5rem, 5vw, 3.5rem); }
+  .block-inner { padding-top: clamp(2.25rem, 4.5vw, 3.25rem); }
+  .head-gap { margin-bottom: clamp(1.5rem, 3vw, 2rem); }
+
+  .prompts { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; max-width: var(--measure); }
+  .prompts li {
+    padding-block: 0.95rem;
+    border-top: 1px solid var(--rule-soft);
+    color: var(--ink-2);
+  }
+  .prompts li:first-child { border-top: 0; padding-top: 0; }
+
+  .after { margin-top: 1.5rem; color: var(--ink-3); max-width: var(--measure); font-size: 0.9375rem; }
+
+  .links { display: grid; border-top: 1px solid var(--rule); max-width: 46rem; }
+  .links a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--rule-soft);
+    text-decoration: none;
+    color: var(--ink);
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 1.0625rem;
+  }
+  .links a:hover, .links a:hover .where { color: var(--accent); }
+  .where {
+    font-family: var(--f-mono);
+    font-weight: 400;
+    font-size: 0.75rem;
+    color: var(--ink-3);
+  }
+</style>

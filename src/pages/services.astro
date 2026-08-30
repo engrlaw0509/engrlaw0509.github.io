@@ -1,0 +1,170 @@
+---
+import Base from '../layouts/Base.astro';
+
+const services = [
+  {
+    label: 'Integration',
+    title: 'Make your systems talk to each other',
+    body: 'Most businesses already own the software they need — it just does not connect. Sales sit in one place, stock in another, the accountant gets a spreadsheet at month end. We join them up so a figure entered once appears everywhere it should, with a record of every move in case anyone asks.',
+    forWho: 'Best when you have more than two systems and someone is copying between them.',
+  },
+  {
+    label: 'Automation',
+    title: 'Stop doing it by hand',
+    body: 'The Monday report someone rebuilds from scratch. The invoices typed in twice. The documents read one at a time to pull out three numbers. These can run on their own — including the steps that need a bit of judgement, which software can now handle.',
+    forWho: 'Best when a task is repetitive, follows rules, and eats hours every week.',
+  },
+  {
+    label: 'Migration',
+    title: 'Get off the spreadsheet safely',
+    body: 'Moving years of records onto a real system is the part everyone puts off, because getting it wrong is expensive. We check every row against the old file before anything is switched, keep the old version running alongside, and only cut over once you agree the numbers match.',
+    forWho: 'Best when the spreadsheet has become too big, too slow, or too risky to trust.',
+  },
+  {
+    label: 'Custom software',
+    title: 'Build the thing that does not exist yet',
+    body: 'Sometimes there is no product that fits, because the way you work is the reason you win. The four systems in our work are all this: built for one business, around how that business actually operates, and now running it every day.',
+    forWho: 'Best when off-the-shelf software almost fits but forces you to change how you work.',
+  },
+];
+
+const steps = [
+  {
+    title: 'We talk about the week, not the software',
+    body: 'What takes too long, what gets done twice, what nobody wants to be responsible for. No jargon needed — describe it the way you would to a new employee.',
+  },
+  {
+    title: 'You get an honest answer',
+    body: 'Sometimes the answer is that a cheaper tool already does this, or that the problem is not worth building for yet. We would rather say so than take the work.',
+  },
+  {
+    title: 'We build the smallest useful thing first',
+    body: 'One real part of the job, working, in your hands early — so you can tell us it is wrong before it is expensive to change.',
+  },
+  {
+    title: 'It goes live without stopping the business',
+    body: 'Old and new run side by side until the numbers agree. Nobody closes for a day to switch systems.',
+  },
+];
+---
+
+<Base
+  title="Services"
+  description="Integration, automation, data migration and custom software for Philippine businesses — from LMI Automata Labs in Metro Manila."
+>
+  <section class="sheet head">
+    <div class="row">
+      <div class="margin" aria-hidden="true">Services</div>
+      <div class="head-body">
+        <p class="eyebrow">What we do</p>
+        <h1 class="page-title">Four ways this usually starts.</h1>
+        <p class="lede">
+          Not every problem needs new software. Often the fastest fix is connecting what you
+          already own, or taking one manual job off someone&rsquo;s desk. Here is the range,
+          cheapest first.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {services.map((s) => (
+    <section class="sheet block">
+      <hr class="rule" />
+      <div class="row block-inner">
+        <div class="margin" aria-hidden="true">{s.label}</div>
+        <div class="svc">
+          <h2 class="svc-title">{s.title}</h2>
+          <p class="svc-body">{s.body}</p>
+          <p class="svc-for">{s.forWho}</p>
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <section class="sheet block">
+    <hr class="rule" />
+    <div class="row block-inner">
+      <div class="margin" aria-hidden="true">How it goes</div>
+      <div>
+        <h2 class="section-title head-gap">How working together goes</h2>
+        <ol class="steps">
+          {steps.map((step, i) => (
+            <li class="step">
+              <span class="step-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <div class="step-body">
+                <h3 class="step-title">{step.title}</h3>
+                <p class="step-text">{step.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="sheet block">
+    <hr class="rule" />
+    <div class="row block-inner">
+      <div class="margin" aria-hidden="true">Next</div>
+      <div class="cta">
+        <h2 class="section-title">Not sure which of these you need?</h2>
+        <p class="lede">
+          That is normal, and it is our job to work out. Describe the part of the week that
+          goes wrong and we will tell you which one it is — or that it is none of them.
+        </p>
+        <a class="btn" href="/contact/">Start a conversation</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .head { padding-block: clamp(2.75rem, 7vw, 4.5rem) clamp(2rem, 4vw, 3rem); }
+  .head-body { display: grid; gap: 1.1rem; }
+  .page-title {
+    font-weight: 800;
+    font-size: clamp(2.1rem, 1.2rem + 3.6vw, 3.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    max-width: 18ch;
+  }
+
+  .block { padding-block: 0 clamp(2.25rem, 4.5vw, 3.25rem); }
+  .block-inner { padding-top: clamp(2.25rem, 4.5vw, 3.25rem); }
+  .head-gap { margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem); }
+
+  .svc { display: grid; gap: 0.75rem; }
+  .svc-title { font-weight: 700; font-size: clamp(1.4rem, 1.15rem + 1vw, 1.9rem); line-height: 1.1; }
+  .svc-body { color: var(--ink-2); max-width: var(--measure); }
+  .svc-for {
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: var(--ink-3);
+    border-left: 2px solid var(--rule);
+    padding-left: 0.85rem;
+    max-width: 52ch;
+  }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0 1.25rem;
+    padding-block: 1.5rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .step:first-child { border-top: 0; padding-top: 0; }
+  .step-n {
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    padding-top: 0.3rem;
+  }
+  .step-body { display: grid; gap: 0.35rem; }
+  .step-title { font-weight: 700; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
+  .step-text { color: var(--ink-2); max-width: var(--measure); }
+
+  .cta { display: grid; gap: 1.1rem; justify-items: start; }
+</style>
