@@ -17,7 +17,7 @@
     "sharp": "^0.34.4",
     "sirv-cli": "^3.0.1"
   },
-  "devDependencies": {
-    "puppeteer-core": "^25.9.0"
+  "engines": {
+    "node": ">=22"
   }
 }

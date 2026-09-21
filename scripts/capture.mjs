@@ -15,8 +15,19 @@
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import puppeteer from 'puppeteer-core';
 import sharp from 'sharp';
+
+let puppeteer;
+try {
+  puppeteer = (await import('puppeteer-core')).default;
+} catch {
+  console.error('puppeteer-core is not installed.');
+  console.error('It is kept out of package.json because its presence makes Railway');
+  console.error('apt-install Chromium on every build. Install it just for this run:');
+  console.error('');
+  console.error('  npm i --no-save puppeteer-core');
+  process.exit(1);
+}
 
 const CHROME =
   process.env.CHROME_PATH ??

@@ -4,8 +4,13 @@ The marketing site for **LMI Automata Labs** — a Manila software studio.
 
 Live at <https://lmiautomatalabs.com>.
 
-Built with [Astro](https://astro.build). Pushing to `main` builds and deploys it via
-GitHub Actions; there is nothing to run by hand.
+Built with [Astro](https://astro.build) and hosted on **Railway** (project
+`lmi-automata-labs`, service `web`), which builds and deploys on every push to `main`.
+`railway.json` holds the build and start commands; `npm start` runs the same static
+server locally, so what Railway does is reproducible before it gets there.
+
+Node is pinned to 22+ via `engines` — Railway otherwise picks Node 18, which is below
+what Astro 5 requires.
 
 ```bash
 npm install
@@ -62,6 +67,16 @@ isolation" on this site, even though the second one is what makes the first true
 
 `scripts/capture.mjs` drives the Chrome already installed on this machine and writes
 screenshots straight into the project folders at 1800px wide.
+
+**It needs `puppeteer-core`, which is deliberately not in `package.json`** — its presence
+there makes Railway's builder apt-install Chromium on every deploy, which costs minutes
+and hundreds of megabytes for a tool only ever run locally. Install it for the run:
+
+```bash
+npm i --no-save puppeteer-core
+```
+
+The same applies to `npm run og`. `npm run logo` only needs sharp and works as-is.
 
 ```bash
 node scripts/capture.mjs sentro     # that app's dev server must be running
