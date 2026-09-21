@@ -124,36 +124,52 @@ Replacing any image is just dropping a better file over the old one and rebuildi
 
 ## The enquiry form
 
-`/contact/` collects name, business, contact details, sector, size, what the business runs
-on today, the one job that takes too long, and what they need.
+`/contact/` is a three-step flow: who you are, how the business runs today, what you need.
+With the page's script blocked it degrades to one plain page of the same fields and a
+single Send button that posts natively — so it works either way.
 
-Static hosting cannot receive a POST, so the form posts to **FormSubmit**, which emails the
-submission to `lmiautomatalabs@gmail.com`. There is no account and nothing to deploy — the
-address *is* the endpoint. **The first submission ever made triggers a one-time activation
-link to that inbox; click it once and everything after arrives directly.**
+It posts to **FormSubmit**, which emails `lmiautomatalabs@gmail.com`. No account, nothing
+to deploy: the address is the endpoint. Hidden fields configure it (`_subject`,
+`_template=table`, `_captcha=false`, `_honey` as the honeypot).
 
-Hidden fields configure it: `_subject`, `_template=table` for a readable email,
-`_captcha=false` to skip the interstitial, and `_honey` as the spam honeypot.
+### FormSubmit needs activating once
 
-Trade-off: submissions pass through `formsubmit.co`. That is fine for business enquiries
-and nothing sensitive is collected. If you would rather nothing left your own Google
-account, deploy [`scripts/enquiry-endpoint.gs`](scripts/enquiry-endpoint.gs) — an Apps
-Script web app that writes to a Sheet you own and emails you — and put its `/exec` URL in
-`ENDPOINT_OVERRIDE` in [`src/pages/contact.astro`](src/pages/contact.astro). The form and
-its script work with either, unchanged.
+**The first submission ever made does not arrive.** FormSubmit replies asking you to click
+an "Activate Form" link it mails to that inbox. Until that is clicked every submission is
+refused. Check spam if it is not obvious.
 
-Two details worth keeping if you edit it:
+### It answers 200 even when it refuses
 
-- It is a **real `<form method="POST">`**, so it works with the page's script blocked — the
-  browser just navigates to the endpoint's own thank-you page. The script only upgrades
-  that to an inline result.
-- If the request **cannot be confirmed it falls back to a native submit** rather than
-  reporting success. A form that says "sent" when nothing sent is worse than a reload.
+This is the trap. FormSubmit returns **HTTP 200** for a rejection and puts the real verdict
+in a `success` field, **as a string**:
 
-To change the destination address, change `email` at the top of `contact.astro` — the
-action, the AJAX URL and the page copy all derive from it.
+```json
+{"success":"false","message":"This form needs Activation. ..."}
+```
+
+Checking `response.ok` therefore reports success while nothing was sent — which is what
+this form did until it was caught. The handler compares `String(res.success) !== 'true'`
+and surfaces the endpoint's own message on failure, so a refusal is visible rather than
+silent.
+
+### Changing where it goes
+
+Change `email` at the top of [`src/pages/contact.astro`](src/pages/contact.astro) — the
+action, the AJAX URL and the page copy all derive from it. To keep enquiries inside your
+own Google account instead, deploy
+[`scripts/enquiry-endpoint.gs`](scripts/enquiry-endpoint.gs) and set `ENDPOINT_OVERRIDE`.
 
 ---
+
+## A CSS trap worth knowing
+
+`global.css` carries `[hidden] { display: none !important; }` and it is load-bearing.
+
+The `hidden` attribute is only `display: none` in the **UA stylesheet**, so any author
+`display` declaration beats it. A `.btn` (`display: inline-flex`) or a grid container with
+`hidden` set stays fully visible while the DOM, and any script checking `el.hidden`,
+insists it is hidden. The contact form's success panel shipped visible for exactly this
+reason. Anything toggled with `hidden` depends on that rule.
 
 ## Design
 

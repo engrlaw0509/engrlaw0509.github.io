@@ -4,22 +4,29 @@ import Base from '../layouts/Base.astro';
 const email = 'lmiautomatalabs@gmail.com';
 
 /**
- * Enquiries are emailed straight to `email` below by FormSubmit, which needs no
- * account and no deployment — the address is the endpoint. The very first
- * submission triggers a one-time activation link sent to that inbox; click it
- * once and every submission after arrives directly.
+ * Enquiries are emailed straight to `email` by FormSubmit — no account, nothing
+ * to deploy, the address is the endpoint. The first submission ever made needs a
+ * one-time "Activate Form" link clicked in that inbox.
  *
- * Trade-off worth knowing: submissions pass through formsubmit.co on the way.
- * That is fine for business enquiries and nothing sensitive is collected, but if
- * you would rather nothing left your own Google account, deploy
- * scripts/enquiry-endpoint.gs instead and put its /exec URL in ENDPOINT_OVERRIDE
- * — the form and its script work with either.
+ * Careful: FormSubmit answers with HTTP 200 even when it REJECTS a submission,
+ * putting the real verdict in a `success` field as a string. Checking the status
+ * code alone makes the form report success while sending nothing — which is
+ * exactly what happened here. See the submit handler below.
+ *
+ * If you would rather nothing passed through a third party, deploy
+ * scripts/enquiry-endpoint.gs and put its /exec URL in ENDPOINT_OVERRIDE.
  */
 const ENDPOINT_OVERRIDE = '';
 const ACTION = ENDPOINT_OVERRIDE || `https://formsubmit.co/${email}`;
 const AJAX = ENDPOINT_OVERRIDE || `https://formsubmit.co/ajax/${email}`;
 
-const sizes = ['Just me', '2–10 people', '11–50 people', 'More than 50'];
+const steps = [
+  { n: 1, label: 'About you' },
+  { n: 2, label: 'How it works now' },
+  { n: 3, label: 'What you need' },
+];
+
+const sizes = ['Just me', '2–10', '11–50', '50+'];
 const sectors = [
   'Food & beverage / cafe',
   'Retail',
@@ -32,13 +39,13 @@ const sectors = [
 const runsOn = [
   'Spreadsheets',
   'Pen and paper',
-  'A point-of-sale system',
+  'A POS system',
   'Accounting software',
-  'Messenger / Viber threads',
-  'An app we already paid for',
+  'Messenger / Viber',
+  'An app we already pay for',
 ];
 const needs = [
-  'Connect systems we already have',
+  'Connect what we have',
   'Automate something repetitive',
   'Move off spreadsheets',
   'Build something new',
@@ -55,132 +62,172 @@ const needs = [
       <p class="eyebrow">Get in touch</p>
       <h1 class="h-xl head-title">Tell us how your business runs today.</h1>
       <p class="lede">
-        No specification needed, and no budget figure. The most useful thing you can
-        describe is one job that takes too long and who has to do it. Five minutes here
-        saves a meeting later.
+        Three short steps, about two minutes. No specification needed and no budget
+        figure &mdash; the most useful thing you can describe is one job that takes too
+        long and who has to do it.
       </p>
     </div>
   </section>
 
   <section class="section">
     <div class="wrap layout">
-      <form class="form card-surface" method="POST" action={ACTION} data-ajax={AJAX}>
-        {/* FormSubmit settings. _honey is its built-in honeypot: bots fill it,
-            people never see it, and it is discarded server-side. */}
-        <input type="hidden" name="_subject" value="New enquiry from lmiautomatalabs.com" />
-        <input type="hidden" name="_template" value="table" />
-        <input type="hidden" name="_captcha" value="false" />
-        <input type="text" name="_honey" class="botcheck" tabindex="-1" aria-hidden="true" autocomplete="off" />
-
-        <!-- ---------- who ---------- -->
-        <fieldset class="group">
-          <legend class="legend"><span class="legend-n">01</span> About you</legend>
-
-          <div class="row">
-            <label class="field">
-              <span class="label">Your name <em>*</em></span>
-              <input class="input" type="text" name="name" required autocomplete="name" />
-            </label>
-            <label class="field">
-              <span class="label">Business name</span>
-              <input class="input" type="text" name="business" autocomplete="organization" />
-            </label>
-          </div>
-
-          <div class="row">
-            <label class="field">
-              <span class="label">Email <em>*</em></span>
-              <input class="input" type="email" name="email" required autocomplete="email" />
-            </label>
-            <label class="field">
-              <span class="label">Mobile or Viber</span>
-              <input class="input" type="tel" name="phone" autocomplete="tel"
-                     placeholder="09XX XXX XXXX" />
-            </label>
-          </div>
-
-          <div class="row">
-            <label class="field">
-              <span class="label">What line of work?</span>
-              <select class="input" name="sector">
-                <option value="">Choose one…</option>
-                {sectors.map((s) => <option value={s}>{s}</option>)}
-              </select>
-            </label>
-            <label class="field">
-              <span class="label">How many people?</span>
-              <select class="input" name="size">
-                <option value="">Choose one…</option>
-                {sizes.map((s) => <option value={s}>{s}</option>)}
-              </select>
-            </label>
-          </div>
-        </fieldset>
-
-        <!-- ---------- current system ---------- -->
-        <fieldset class="group">
-          <legend class="legend"><span class="legend-n">02</span> How it works now</legend>
-
-          <span class="label">What does the business run on today? Tick any that apply.</span>
-          <div class="checks">
-            {runsOn.map((r) => (
-              <label class="check">
-                <input type="checkbox" name="runs_on" value={r} />
-                <span>{r}</span>
-              </label>
-            ))}
-          </div>
-
-          <label class="field">
-            <span class="label">Walk us through one job that takes too long <em>*</em></span>
-            <span class="hint">
-              Who does it, how often, and what they have to open to get it done. Plain words
-              are fine — describe it the way you would to a new employee.
-            </span>
-            <textarea class="input area" name="current_process" rows="5" required
-              placeholder="Every fortnight our supervisor collects the attendance notebooks from three sites, types them into a spreadsheet, then types the totals again into payroll. It takes a full evening and the numbers rarely match first time."></textarea>
-          </label>
-        </fieldset>
-
-        <!-- ---------- needs ---------- -->
-        <fieldset class="group">
-          <legend class="legend"><span class="legend-n">03</span> What you need</legend>
-
-          <span class="label">Which of these sounds closest?</span>
-          <div class="checks">
-            {needs.map((n) => (
-              <label class="check">
-                <input type="checkbox" name="needs" value={n} />
-                <span>{n}</span>
-              </label>
-            ))}
-          </div>
-
-          <label class="field">
-            <span class="label">What would good look like?</span>
-            <span class="hint">
-              If this were solved, what would be different on a Monday morning?
-            </span>
-            <textarea class="input area" name="outcome" rows="3"
-              placeholder="Payroll done in twenty minutes, and I can see each site's hours without ringing anyone."></textarea>
-          </label>
-        </fieldset>
-
-        <div class="submit">
-          <button class="btn" type="submit">Send enquiry</button>
-          <p class="status" role="status" aria-live="polite" hidden></p>
-          <p class="privacy">
-            Goes straight to {email}. We use it to reply to you and nothing else &mdash;
-            no list, no forwarding, no third parties.
+      <div class="form-shell card-surface">
+        <!-- Shown only after a send we have actually confirmed. -->
+        <div class="done" hidden>
+          <span class="done-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+              <path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <h2 class="h-md">Thanks &mdash; that reached us.</h2>
+          <p class="muted">
+            We read every one properly and usually reply the same day. If it is urgent,
+            <a href={`mailto:${email}`}>email us directly</a>.
           </p>
         </div>
-      </form>
+
+        <form class="form" method="POST" action={ACTION} data-ajax={AJAX}>
+          <input type="hidden" name="_subject" value="New enquiry from lmiautomatalabs.com" />
+          <input type="hidden" name="_template" value="table" />
+          <input type="hidden" name="_captcha" value="false" />
+          {/* FormSubmit's honeypot: bots fill it, people never see it. */}
+          <input type="text" name="_honey" class="honey" tabindex="-1" aria-hidden="true"
+                 autocomplete="off" />
+
+          <ol class="progress" aria-hidden="true">
+            {steps.map((s) => (
+              <li class="pip">
+                <span class="pip-n">{s.n}</span>
+                <span class="pip-l">{s.label}</span>
+              </li>
+            ))}
+          </ol>
+
+          <div class="steps">
+            <!-- ---------- 1 ---------- -->
+            <fieldset class="step">
+              <legend class="sr-only">About you</legend>
+
+              <div class="row">
+                <label class="field">
+                  <span class="label">Your name <em>*</em></span>
+                  <input class="input" type="text" name="name" required autocomplete="name"
+                         placeholder="Juan Dela Cruz" />
+                </label>
+                <label class="field">
+                  <span class="label">Business name</span>
+                  <input class="input" type="text" name="business" autocomplete="organization"
+                         placeholder="Optional" />
+                </label>
+              </div>
+
+              <div class="row">
+                <label class="field">
+                  <span class="label">Email <em>*</em></span>
+                  <input class="input" type="email" name="email" required autocomplete="email"
+                         placeholder="you@business.ph" />
+                </label>
+                <label class="field">
+                  <span class="label">Mobile or Viber</span>
+                  <input class="input" type="tel" name="phone" autocomplete="tel"
+                         placeholder="09XX XXX XXXX" />
+                </label>
+              </div>
+
+              <label class="field">
+                <span class="label">What line of work?</span>
+                <select class="input select" name="sector">
+                  <option value="">Choose one&hellip;</option>
+                  {sectors.map((s) => <option value={s}>{s}</option>)}
+                </select>
+              </label>
+
+              <fieldset class="sub">
+                <legend class="label">How many people?</legend>
+                <div class="chips">
+                  {sizes.map((s) => (
+                    <label class="chip">
+                      <input type="radio" name="size" value={s} />
+                      <span>{s}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+            </fieldset>
+
+            <!-- ---------- 2 ---------- -->
+            <fieldset class="step">
+              <legend class="sr-only">How it works now</legend>
+
+              <fieldset class="sub">
+                <legend class="label">What does the business run on today?</legend>
+                <span class="hint">Tick any that apply.</span>
+                <div class="chips">
+                  {runsOn.map((r) => (
+                    <label class="chip">
+                      <input type="checkbox" name="runs_on" value={r} />
+                      <span>{r}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <label class="field">
+                <span class="label">One job that takes too long <em>*</em></span>
+                <span class="hint">
+                  Who does it, how often, and what they have to open to get it done. Plain
+                  words are fine.
+                </span>
+                <textarea class="input area" name="current_process" rows="5" required
+                  placeholder="Attendance gets written in a notebook on site, typed into a spreadsheet that evening, then typed again into payroll."></textarea>
+              </label>
+            </fieldset>
+
+            <!-- ---------- 3 ---------- -->
+            <fieldset class="step">
+              <legend class="sr-only">What you need</legend>
+
+              <fieldset class="sub">
+                <legend class="label">Which of these sounds closest?</legend>
+                <div class="chips">
+                  {needs.map((n) => (
+                    <label class="chip">
+                      <input type="checkbox" name="needs" value={n} />
+                      <span>{n}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <label class="field">
+                <span class="label">What would good look like?</span>
+                <span class="hint">If this were solved, what changes on a Monday morning?</span>
+                <textarea class="input area" name="outcome" rows="3"
+                  placeholder="Payroll done in twenty minutes, and I can see each site's hours without ringing anyone."></textarea>
+              </label>
+            </fieldset>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-ghost nav-back" type="button" hidden>Back</button>
+            <button class="btn nav-next" type="button" hidden>Continue</button>
+            <button class="btn submit-btn" type="submit">Send enquiry</button>
+          </div>
+
+          <p class="status" role="status" aria-live="polite" hidden></p>
+          <p class="privacy">
+            Goes to {email}. Used to reply to you and nothing else &mdash; no list, no
+            forwarding.
+          </p>
+        </form>
+      </div>
 
       <aside class="side">
         <div class="card-surface panel">
           <h2 class="h-md">Rather just message?</h2>
           <p class="muted side-p">
-            The form helps us come to the first call already understanding your setup, but a
+            The form means a first call starts with your setup already understood, but a
             one-line message is a perfectly good start.
           </p>
           <div class="links">
@@ -216,25 +263,66 @@ const needs = [
   </section>
 
   <script is:inline>
-    // The form is a real POST and works with this script blocked — the browser
-    // just navigates to FormSubmit's own thank-you page. With the script running
-    // we submit in the background and report inline instead.
-    //
-    // If the request cannot be confirmed we hand over to a native submit rather
-    // than claiming success. A form that says "sent" when nothing sent is worse
-    // than a page reload.
+    // Progressive enhancement. With this script blocked the form is one plain
+    // page of fields and a single Send button, which posts natively and lands on
+    // the endpoint's own thank-you page. With it running, the same fields become
+    // a three-step flow that submits in the background.
     (function () {
       var form = document.querySelector('form[data-ajax]');
       if (!form) return;
+
+      var shell = form.closest('.form-shell');
+      var done = shell.querySelector('.done');
       var status = form.querySelector('.status');
-      var button = form.querySelector('button[type=submit]');
+      var stepEls = [].slice.call(form.querySelectorAll('.step'));
+      var pips = [].slice.call(form.querySelectorAll('.pip'));
+      var back = form.querySelector('.nav-back');
+      var next = form.querySelector('.nav-next');
+      var send = form.querySelector('.submit-btn');
+      var at = 0;
 
       function say(msg, bad) {
-        if (!status) return;
-        status.hidden = false;
-        status.textContent = msg;
+        status.hidden = !msg;
+        status.textContent = msg || '';
         status.classList.toggle('is-bad', !!bad);
       }
+
+      function render() {
+        stepEls.forEach(function (el, i) { el.classList.toggle('is-active', i === at); });
+        pips.forEach(function (p, i) {
+          p.classList.toggle('is-on', i === at);
+          p.classList.toggle('is-done', i < at);
+        });
+        back.hidden = at === 0;
+        next.hidden = at === stepEls.length - 1;
+        send.hidden = at !== stepEls.length - 1;
+        say('');
+      }
+
+      /** Validate only the step on screen — a hidden required field must not block. */
+      function stepValid() {
+        var fields = stepEls[at].querySelectorAll('input, select, textarea');
+        for (var i = 0; i < fields.length; i++) {
+          if (!fields[i].checkValidity()) { fields[i].reportValidity(); return false; }
+        }
+        return true;
+      }
+
+      form.classList.add('is-stepped');
+      render();
+
+      next.addEventListener('click', function () {
+        if (!stepValid()) return;
+        at = Math.min(at + 1, stepEls.length - 1);
+        render();
+        shell.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      });
+
+      back.addEventListener('click', function () {
+        at = Math.max(at - 1, 0);
+        render();
+        shell.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      });
 
       form.addEventListener('submit', function (e) {
         if (!form.reportValidity()) return;
@@ -247,7 +335,7 @@ const needs = [
           else payload[k] = [payload[k], v];
         });
 
-        button.disabled = true;
+        send.disabled = true;
         say('Sending…');
 
         fetch(form.dataset.ajax, {
@@ -255,18 +343,25 @@ const needs = [
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify(payload),
         })
-          .then(function (r) {
-            if (!r.ok) throw new Error('rejected');
-            return r.json().catch(function () { return {}; });
+          .then(function (r) { return r.json().catch(function () { return {}; }); })
+          .then(function (res) {
+            // FormSubmit answers 200 even when it refuses, and puts the real
+            // verdict in `success` as a STRING. Trusting the status code is what
+            // made this form claim it had sent while sending nothing.
+            if (String(res.success) !== 'true') {
+              throw new Error(res.message || 'The endpoint rejected the submission.');
+            }
+            form.hidden = true;
+            done.hidden = false;
+            done.scrollIntoView({ block: 'center', behavior: 'smooth' });
           })
-          .then(function () {
-            form.reset();
-            button.disabled = false;
-            say('Thanks — that reached us. We usually reply the same day.');
-          })
-          .catch(function () {
-            form.removeAttribute('data-ajax');
-            form.submit();
+          .catch(function (err) {
+            send.disabled = false;
+            say(
+              (err && err.message ? err.message + ' ' : '') +
+                'Nothing was sent — please email us directly.',
+              true,
+            );
           });
       });
     })();
@@ -280,92 +375,166 @@ const needs = [
 
   .layout { display: grid; gap: 1.5rem; align-items: start; }
   @media (min-width: 64rem) {
-    .layout { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 2rem; }
+    .layout { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 2rem; }
   }
 
-  /* ---------------- form ---------------- */
-  .form { display: grid; gap: clamp(1.75rem, 3vw, 2.5rem); }
-  .botcheck { position: absolute; left: -9999px; opacity: 0; }
-
-  .group { border: 0; margin: 0; padding: 0; display: grid; gap: 1rem; }
-  .legend {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-family: var(--f-display);
-    font-weight: 700;
-    font-size: 1.125rem;
-    letter-spacing: -0.02em;
-    padding: 0;
-    margin-bottom: 0.25rem;
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
-  .legend-n {
+
+  .form-shell { padding: clamp(1.25rem, 3vw, 2.25rem); }
+  .form { display: grid; gap: clamp(1.5rem, 3vw, 2rem); }
+  .honey { position: absolute; left: -9999px; opacity: 0; }
+
+  /* ---------------- progress ---------------- */
+  .progress {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 1.25rem;
+    border-bottom: 1px solid var(--line);
+    display: none;
+    gap: 0.5rem;
+  }
+  .is-stepped .progress { display: grid; grid-template-columns: repeat(3, 1fr); }
+  .pip { display: grid; grid-template-columns: auto 1fr; gap: 0.45rem 0.5rem; }
+  .pip::before {
+    content: '';
+    grid-column: 1 / -1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--line);
+    transition: background-color 220ms ease;
+  }
+  .pip.is-on::before, .pip.is-done::before { background: var(--accent); }
+  .pip-n {
     font-family: var(--f-mono);
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--accent);
+    font-size: 0.6875rem;
+    color: var(--ink-3);
+  }
+  .pip.is-on .pip-n, .pip.is-done .pip-n { color: var(--accent); }
+  .pip-l {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink-3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pip.is-on .pip-l { color: var(--ink); }
+  @media (max-width: 34rem) { .pip-l { display: none; } }
+
+  /* ---------------- steps ---------------- */
+  .steps { display: grid; gap: clamp(1.5rem, 3vw, 2rem); }
+  .step { border: 0; margin: 0; padding: 0; display: grid; gap: 1.1rem; }
+  /* Without the script every step shows; with it, only the active one. */
+  .is-stepped .step { display: none; }
+  .is-stepped .step.is-active {
+    display: grid;
+    animation: step-in 260ms cubic-bezier(.2, .6, .2, 1);
+  }
+  @keyframes step-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .is-stepped .step.is-active { animation: none; }
   }
 
+  .sub { border: 0; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
   .row { display: grid; gap: 1rem; }
   @media (min-width: 40rem) { .row { grid-template-columns: 1fr 1fr; } }
 
-  .field { display: grid; gap: 0.35rem; }
-  .label { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+  /* ---------------- fields ---------------- */
+  .field { display: grid; gap: 0.4rem; }
+  .label { font-size: 0.875rem; font-weight: 600; color: var(--ink); padding: 0; }
   .label em { font-style: normal; color: var(--accent); }
   .hint { font-size: 0.8125rem; line-height: 1.5; color: var(--ink-3); }
 
   .input {
     font-family: var(--f-body);
-    font-size: 0.9375rem;
+    font-size: 1rem;
     color: var(--ink);
-    background: var(--bg);
-    border: 1px solid var(--line);
+    background: var(--surface-2);
+    border: 1px solid transparent;
     border-radius: var(--r);
-    padding: 0.7rem 0.85rem;
+    padding: 0.85rem 1rem;
     width: 100%;
-    transition: border-color 140ms ease, box-shadow 140ms ease;
+    min-height: 3rem;
+    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
   }
   .input::placeholder { color: var(--ink-3); }
+  .input:hover { border-color: var(--line); }
   .input:focus {
     outline: none;
+    background: var(--bg);
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-wash);
   }
-  .area { resize: vertical; line-height: 1.6; min-height: 5.5rem; }
+  .select { cursor: pointer; }
+  .area { resize: vertical; line-height: 1.6; min-height: 6rem; }
 
-  .checks {
-    display: grid;
-    gap: 0.5rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
-  }
-  .check {
-    display: flex;
+  /* ---------------- chips ---------------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .chip {
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
     font-size: 0.9375rem;
+    font-weight: 500;
     color: var(--ink-2);
-    background: var(--bg);
-    border: 1px solid var(--line);
-    border-radius: var(--r);
-    padding: 0.6rem 0.8rem;
+    background: var(--surface-2);
+    border: 1px solid transparent;
+    border-radius: var(--r-pill);
+    padding: 0.6rem 1rem;
+    min-height: 2.75rem;
+    cursor: pointer;
+    transition: background-color 160ms ease, border-color 160ms ease,
+                color 160ms ease, transform 110ms ease;
+  }
+  .chip:hover { border-color: var(--line); color: var(--ink); }
+  .chip:active { transform: scale(0.97); }
+  /* The native control stays the accessible one; it just is not the visible one. */
+  .chip input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
     cursor: pointer;
   }
-  .check:hover { border-color: var(--ink-3); }
-  .check input { accent-color: var(--accent); width: 1rem; height: 1rem; flex: none; }
-  .check:has(input:checked) {
+  .chip:has(input:checked) {
+    background: var(--accent-wash);
     border-color: var(--accent);
     color: var(--ink);
-    background: var(--accent-wash);
+    font-weight: 600;
+  }
+  .chip:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .chip:active { transform: none; } }
+
+  /* ---------------- actions ---------------- */
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+  .actions .btn { min-height: 3rem; }
+  @media (max-width: 30rem) {
+    .actions { flex-direction: column-reverse; align-items: stretch; }
+    .actions .btn { width: 100%; justify-content: center; }
   }
 
-  .submit { display: grid; gap: 0.8rem; justify-items: start; }
-  .privacy { font-size: 0.8125rem; color: var(--ink-3); max-width: 58ch; }
-  .status {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--live);
-  }
+  .status { font-size: 0.9375rem; font-weight: 600; color: var(--live); }
   .status.is-bad { color: var(--building); }
+  .privacy { font-size: 0.8125rem; color: var(--ink-3); max-width: 58ch; }
+
+  /* ---------------- success ---------------- */
+  .done { display: grid; gap: 0.7rem; justify-items: start; padding: 1rem 0; }
+  .done-mark {
+    display: grid;
+    place-items: center;
+    width: 3rem; height: 3rem;
+    border-radius: 50%;
+    background: var(--accent-wash);
+    color: var(--live);
+    margin-bottom: 0.25rem;
+  }
 
   /* ---------------- side ---------------- */
   .side { display: grid; gap: 1.25rem; align-content: start; }

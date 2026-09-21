@@ -100,6 +100,11 @@
 
 /* ---------------- base ---------------- */
 *, *::before, *::after { box-sizing: border-box; }
+
+/* The `hidden` attribute is only `display: none` in the UA stylesheet, so ANY
+   author `display` beats it — a `.btn` or a grid container with `hidden` set
+   stays visible. Every element given `hidden` by script relies on this. */
+[hidden] { display: none !important; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
