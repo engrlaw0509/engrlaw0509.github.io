@@ -34,13 +34,13 @@
     background: radial-gradient(60% 60% at 50% 50%, rgba(0,180,216,.17), transparent 70%);
   }
 
-  .top { position: relative; display: flex; align-items: center; gap: .7rem; }
-  .mark { width: 2.5rem; height: 2.5rem; border-radius: .7rem; background: #145C94; display: grid; place-items: center; }
+  .top { position: relative; display: flex; align-items: center; gap: 1rem; }
+  .mark { width: 4.6rem; height: 4.6rem; border-radius: 1rem; background: #fff; border: 1px solid #DBE6EF; }
   .brand {
     font-family: "Sora", sans-serif;
     font-weight: 700;
-    font-size: 1.4rem;
-    letter-spacing: -.02em;
+    font-size: 1.85rem;
+    letter-spacing: -.025em;
   }
 
   .mid { position: relative; }
@@ -83,12 +83,7 @@
 </head>
 <body>
   <div class="top">
-    <span class="mark">
-      <svg viewBox="0 0 32 32" width="26" height="26" fill="none" aria-hidden="true">
-        <path d="M9 8.5v15h5.6M20.4 23.5v-15l3.6 5.4" stroke="#fff" stroke-width="2.8"
-              stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </span>
+    <img class="mark" src="../public/brand/mark-180.png" alt="">
     <span class="brand">LMI Automata Labs</span>
   </div>
 

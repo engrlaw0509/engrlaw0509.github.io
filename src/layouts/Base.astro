@@ -38,7 +38,8 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <meta name="description" content={description} />
   <meta name="author" content="Lawrence Ignacio" />
   <link rel="canonical" href={canonical} />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" type="image/png" sizes="64x64" href="/brand/mark-64.png" />
+  <link rel="apple-touch-icon" href="/brand/mark-180.png" />
   <link rel="sitemap" href="/sitemap-index.xml" />
   <meta name="theme-color" content="#145C94" />
 
@@ -68,18 +69,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <header class="masthead">
     <div class="wrap masthead-inner">
       <a class="brand" href="/">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
-            <rect width="24" height="24" rx="6" fill="currentColor" />
-            <path
-              d="M7 6.5v11h4.2M15.4 17.5V6.5l2.6 4"
-              stroke="var(--on-accent)"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </span>
+        <img class="brand-mark" src="/brand/mark-180.png" width="36" height="36" alt="" />
         <span class="brand-name">LMI Automata Labs</span>
       </a>
 
@@ -101,7 +91,10 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <footer class="footer">
     <div class="wrap footer-inner">
       <div class="footer-brand">
-        <span class="footer-name">LMI Automata Labs</span>
+        <span class="footer-name">
+          <img src="/brand/mark-180.png" width="28" height="28" alt="" />
+          LMI Automata Labs
+        </span>
         <p class="footer-note">
           Business software for Philippine companies — point of sale, payroll,
           client portals, and the integrations between them.
@@ -162,7 +155,16 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
       font-size: 1rem;
       letter-spacing: -0.02em;
     }
-    .brand-mark { color: var(--accent); display: flex; }
+    .brand-mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      /* The mark is supplied on white, so give it a deliberate light chip
+         rather than letting it sit as a white box on the dark theme. */
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      flex: none;
+    }
     .brand:hover .brand-name { color: var(--accent); }
 
     .masthead-nav {
@@ -203,6 +205,17 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
       font-weight: 700;
       font-size: 1.0625rem;
       letter-spacing: -0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .footer-name img {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      flex: none;
     }
     .footer-note { color: var(--ink-2); font-size: 0.9375rem; max-width: 42ch; }
     .footer-place {
