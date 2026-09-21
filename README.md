@@ -125,25 +125,36 @@ Replacing any image is just dropping a better file over the old one and rebuildi
 ## The enquiry form
 
 `/contact/` collects name, business, contact details, sector, size, what the business runs
-on today, the job that takes too long, and what they need. GitHub Pages is static and
-cannot receive a POST, so where it goes depends on one constant at the top of
+on today, the one job that takes too long, and what they need. Static hosting cannot
+receive a POST, so where it goes depends on one constant at the top of
 [`src/pages/contact.astro`](src/pages/contact.astro):
 
 ```js
-const WEB3FORMS_KEY = '';   // empty -> mailto fallback
+const ENQUIRY_ENDPOINT = '';   // empty -> mailto fallback
 ```
 
-**As shipped (key empty)** the submit button composes a filled-in email in the visitor's
-mail client. It works with no setup, but it asks the visitor to send the mail themselves,
-and some will not bother.
+**As shipped (empty)** the submit button composes a filled-in email in the visitor's mail
+client. Honest, but lossy — it asks them to send the mail themselves and some will not
+bother.
 
-**Set the key** and the form POSTs to Web3Forms, which mails the submission straight to
-`lmiautomatalabs@gmail.com` with nothing for the visitor to do. Getting a key takes about
-thirty seconds at <https://web3forms.com> — you enter that address, they mail you the key,
-there is no account. Paste it in and rebuild. **This is worth doing**; it is the difference
-between an enquiry landing and an enquiry being abandoned.
+**Set it** and enquiries land in a Google Sheet you own and email you.
+[`scripts/enquiry-endpoint.gs`](scripts/enquiry-endpoint.gs) is the Apps Script web app and
+carries its own deploy steps; paste its `/exec` URL here and rebuild. No third-party form
+service, no subscription, and the data stays inside your Google account.
 
-A hidden `botcheck` honeypot field is already in place either way.
+Three details worth knowing before you change any of it:
+
+- The form is a **real `<form method="POST">`**, so it works with the page's script blocked
+  — the browser just navigates to the endpoint's thank-you page. The script only upgrades
+  that to an inline result.
+- The script posts JSON as **`text/plain`** deliberately. That makes it a "simple" request,
+  so the browser skips the CORS preflight that Apps Script cannot answer.
+- If the fetch fails for any reason it **falls back to a native form submit** rather than
+  reporting success. A form that says "sent" when nothing was sent is worse than one that
+  reloads.
+
+A hidden `botcheck` honeypot is in place either way, and the endpoint accepts honeypot hits
+silently so a bot does not learn it was caught.
 
 ---
 

@@ -4,16 +4,17 @@ import Base from '../layouts/Base.astro';
 const email = 'lmiautomatalabs@gmail.com';
 
 /**
- * Free Web3Forms access key. Get one in about thirty seconds at
- * https://web3forms.com — you enter this address and they mail you the key, no
- * account needed — then paste it below and rebuild.
+ * Where enquiries go. Paste the /exec URL of the Apps Script web app in
+ * scripts/enquiry-endpoint.gs — that file has the deploy steps. The data then
+ * lands in a Google Sheet you own and emails you, with no third-party service.
  *
- * Until it is set the form still works: the submit button composes a filled-in
- * email instead of posting. That keeps the page useful today without pretending
- * a submission was delivered when there is nowhere to deliver it.
+ * While this is empty the form still works: it composes a filled-in email in
+ * the visitor's mail client instead. That is honest but lossy — it asks the
+ * visitor to send the mail themselves, and some will not bother. Setting this
+ * is the difference between an enquiry arriving and an enquiry being abandoned.
  */
-const WEB3FORMS_KEY = '';
-const hasEndpoint = WEB3FORMS_KEY.length > 0;
+const ENQUIRY_ENDPOINT = '';
+const hasEndpoint = ENQUIRY_ENDPOINT.length > 0;
 
 const sizes = ['Just me', '2–10 people', '11–50 people', 'More than 50'];
 const sectors = [
@@ -63,13 +64,10 @@ const needs = [
       <form
         class="form card-surface"
         method={hasEndpoint ? 'POST' : undefined}
-        action={hasEndpoint ? 'https://api.web3forms.com/submit' : undefined}
+        action={hasEndpoint ? ENQUIRY_ENDPOINT : undefined}
+        data-endpoint={hasEndpoint ? ENQUIRY_ENDPOINT : undefined}
         data-mailto={hasEndpoint ? undefined : email}
       >
-        {hasEndpoint && <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />}
-        {hasEndpoint && (
-          <input type="hidden" name="subject" value="New enquiry from lmiautomatalabs.com" />
-        )}
         {/* Honeypot — bots fill it, people never see it. */}
         <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true" />
 
@@ -169,6 +167,7 @@ const needs = [
 
         <div class="submit">
           <button class="btn" type="submit">Send enquiry</button>
+          <p class="status" role="status" aria-live="polite" hidden></p>
           <p class="privacy">
             Goes straight to {email}. We use it to reply to you and nothing else &mdash;
             no list, no forwarding, no third parties.
@@ -214,6 +213,67 @@ const needs = [
       </aside>
     </div>
   </section>
+
+  {hasEndpoint && (
+    <script is:inline>
+      // The form is a real POST and works with this script blocked — the browser
+      // just navigates to the endpoint's thank-you page. With the script running
+      // we submit in the background and report inline instead.
+      //
+      // Posted as text/plain on purpose: that is a "simple" request, so the
+      // browser skips the CORS preflight that Apps Script cannot answer. If the
+      // fetch is blocked anyway we fall back to a native submit, which always
+      // works — so a failure never silently swallows an enquiry.
+      (function () {
+        var form = document.querySelector('form[data-endpoint]');
+        if (!form) return;
+        var status = form.querySelector('.status');
+        var button = form.querySelector('button[type=submit]');
+
+        function say(msg, bad) {
+          if (!status) return;
+          status.hidden = false;
+          status.textContent = msg;
+          status.classList.toggle('is-bad', !!bad);
+        }
+
+        form.addEventListener('submit', function (e) {
+          if (!form.reportValidity()) return;
+          e.preventDefault();
+
+          var d = new FormData(form);
+          var payload = {};
+          d.forEach(function (v, k) {
+            if (payload[k] === undefined) payload[k] = v;
+            else if (Array.isArray(payload[k])) payload[k].push(v);
+            else payload[k] = [payload[k], v];
+          });
+
+          button.disabled = true;
+          say('Sending…');
+
+          fetch(form.dataset.endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload),
+          })
+            .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
+            .then(function (res) {
+              if (!res.ok) throw new Error(res.message || 'rejected');
+              form.reset();
+              button.disabled = false;
+              say('Thanks — that reached us. We usually reply the same day.');
+            })
+            .catch(function () {
+              // Could not confirm it. Rather than claim success, hand it to the
+              // browser's own submit, which posts and navigates for real.
+              form.removeAttribute('data-endpoint');
+              form.submit();
+            });
+        });
+      })();
+    </script>
+  )}
 
   {!hasEndpoint && (
     <script is:inline>
@@ -343,6 +403,12 @@ const needs = [
 
   .submit { display: grid; gap: 0.8rem; justify-items: start; }
   .privacy { font-size: 0.8125rem; color: var(--ink-3); max-width: 58ch; }
+  .status {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--live);
+  }
+  .status.is-bad { color: var(--building); }
 
   /* ---------------- side ---------------- */
   .side { display: grid; gap: 1.25rem; align-content: start; }
