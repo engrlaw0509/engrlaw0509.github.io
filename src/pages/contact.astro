@@ -136,7 +136,7 @@ const needs = [
               </div>
 
               <label class="field">
-                <span class="label">What line of work?</span>
+                <span class="label">Industry</span>
                 <select class="input select" name="sector">
                   <option value="">Choose one&hellip;</option>
                   {sectors.map((s) => <option value={s}>{s}</option>)}
@@ -215,7 +215,7 @@ const needs = [
             <button class="btn submit-btn" type="submit">Send enquiry</button>
           </div>
 
-          <p class="status" role="status" aria-live="polite" hidden></p>
+          <p class="form-status" role="status" aria-live="polite" hidden></p>
           <p class="privacy">
             Goes to {email}. Used to reply to you and nothing else &mdash; no list, no
             forwarding.
@@ -273,7 +273,7 @@ const needs = [
 
       var shell = form.closest('.form-shell');
       var done = shell.querySelector('.done');
-      var status = form.querySelector('.status');
+      var status = form.querySelector('.form-status');
       var stepEls = [].slice.call(form.querySelectorAll('.step'));
       var pips = [].slice.call(form.querySelectorAll('.pip'));
       var back = form.querySelector('.nav-back');
@@ -520,8 +520,19 @@ const needs = [
     .actions .btn { width: 100%; justify-content: center; }
   }
 
-  .status { font-size: 0.9375rem; font-weight: 600; color: var(--live); }
-  .status.is-bad { color: var(--building); }
+  /* Deliberately NOT `.status`: that class in global.css is the "In production"
+     pill — mono, uppercase, bordered and `white-space: nowrap`. Applied to a
+     long endpoint message it refused to wrap, forced the page wider than the
+     viewport and collapsed this two-column grid onto itself. */
+  .form-status {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--live);
+    overflow-wrap: anywhere;
+    max-width: 58ch;
+  }
+  .form-status.is-bad { color: var(--building); }
   .privacy { font-size: 0.8125rem; color: var(--ink-3); max-width: 58ch; }
 
   /* ---------------- success ---------------- */
