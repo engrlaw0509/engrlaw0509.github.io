@@ -6,7 +6,7 @@ order: 1
 featured: true
 
 summary: >-
-  Everything a growing coffee company runs on — the till at the counter, the stockroom,
+  Everything a growing coffee company runs on — the POS at the counter, the stockroom,
   the payroll, and an app that keeps regulars coming back.
 
 problem: >-
