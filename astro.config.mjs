@@ -4,11 +4,15 @@ import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   integrations: [sitemap()],
-  // Served from the domain root, so no `base` is needed. Changing this is what
-  // moves canonical URLs, the sitemap, and every absolute og:image — those are
-  // built at compile time, so a stale value here silently points social
-  // previews at the old github.io address.
-  site: 'https://lmiautomatalabs.com',
+  // `www` is the canonical host: it is the one served by Railway. The bare apex
+  // cannot point at Railway (a zone apex cannot hold a CNAME, and Namecheap
+  // BasicDNS has no ALIAS), so it stays on GitHub Pages serving the same build,
+  // with these canonical tags telling search engines which address is official.
+  //
+  // Changing this value is what moves canonical URLs, the sitemap and every
+  // absolute og:image. They are baked at build time, so a stale value here
+  // silently points social previews at the wrong host.
+  site: 'https://www.lmiautomatalabs.com',
   trailingSlash: 'always',
   build: {
     // Emit /work/kaha/index.html rather than /work/kaha.html so the URLs

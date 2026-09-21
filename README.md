@@ -2,7 +2,7 @@
 
 The marketing site for **LMI Automata Labs** — a Manila software studio.
 
-Live at <https://lmiautomatalabs.com>.
+Live at <https://www.lmiautomatalabs.com>.
 
 Built with [Astro](https://astro.build) and hosted on **Railway** (project
 `lmi-automata-labs`, service `web`), which builds and deploys on every push to `main`.
@@ -165,26 +165,72 @@ large-text exemption.
 
 ---
 
-## Domain
+## Domain and hosting
 
-`lmiautomatalabs.com`, registered at Namecheap. Two things bind it:
+`lmiautomatalabs.com`, registered at Namecheap. It is served from **two** places, and that
+is deliberate:
 
-- `public/CNAME` — GitHub Pages reads this from the built site root and sets the custom
-  domain from it. Delete it and the site falls back to `engrlaw0509.github.io`.
-- `site` in [`astro.config.mjs`](astro.config.mjs) — canonical URLs, the sitemap, and
-  every absolute `og:image` are baked at build time from this. A stale value here points
-  social previews at the wrong host while the site itself looks fine, so change both
-  together.
+| Address | Served by | Role |
+|---|---|---|
+| `www.lmiautomatalabs.com` | **Railway** | **Canonical.** The real site. |
+| `lmiautomatalabs.com` | GitHub Pages | Same build, kept alive so the bare domain works |
+| `engrlaw0509.github.io` | GitHub Pages | 301 to the apex |
 
-### DNS at Namecheap
+**Why not put the apex on Railway?** Railway routes custom domains by CNAME, and a DNS zone
+apex cannot hold a CNAME — the apex must carry `SOA` and `NS`, and a CNAME may not coexist
+with other records on the same name. Providers work around it with non-standard `ALIAS` /
+`ANAME` / CNAME-flattening records, and **Namecheap BasicDNS has none of them**. GitHub
+Pages works at the apex only because it publishes fixed anycast IPs, so plain `A` records
+are legal.
 
-Domain List → **Manage** → **Advanced DNS**. Nameservers must be **Namecheap BasicDNS**
-or Advanced DNS is ignored. Delete the default `CNAME` on `www` pointing at
-`parkingpage.namecheap.com` and any `URL Redirect` record first — they silently win over
-what you add.
+Moving the apex to Railway later needs either Namecheap **PremiumDNS** (which does support
+`ALIAS`) or Cloudflare DNS (CNAME flattening). Then it is:
 
-| Type | Host | Value | TTL |
-|---|---|---|---|
+| Type | Host | Value |
+|---|---|---|
+| ALIAS | `@` | `8zhq5c29.up.railway.app` |
+| TXT | `_railway-verify` | `railway-verify=b1773a1867aee56a899fd6b429cc0014eff70a0343b2cb47ba0aec3fecf497a3` |
+
+### Current DNS at Namecheap (BasicDNS)
+
+| Type | Host | Value |
+|---|---|---|
+| A ×4 | `@` | `185.199.108.153`, `.109.153`, `.110.153`, `.111.153` (GitHub) |
+| CNAME | `www` | `4j96l1ma.up.railway.app` (Railway) |
+| TXT | `_railway-verify.www` | `railway-verify=2062aa…aec26` (Railway ownership) |
+
+**Railway custom domains need that TXT record, and the Railway MCP does not mention it** —
+it reports only the CNAME. Always read the requirements from the CLI instead, which lists
+both:
+
+```bash
+railway domain status www.lmiautomatalabs.com --project <id> --service web
+```
+
+Without the TXT the domain sits in `VALIDATING_OWNERSHIP` indefinitely, and
+`railway domain certificate retry` refuses to help because Railway has not *failed* — it is
+still waiting.
+
+Delete Namecheap's default `www` CNAME to `parkingpage.namecheap.com` and any **URL
+Redirect Record** before adding anything. A URL Redirect on `@` is implemented by pointing
+the host at Namecheap's own redirect server, so it silently injects an extra `A` record into
+the apex — and it hides behind the **SHOW MORE** button in Advanced DNS.
+
+### Two hosts means two pipelines
+
+Pushing to `main` deploys to both: Railway builds and serves `www`, and the GitHub Actions
+workflow publishes the apex. They build from the same commit, so they stay in step. If you
+ever move the apex to Railway, delete `.github/workflows/deploy.yml` and `public/CNAME`.
+
+### After a domain change
+
+Facebook and LinkedIn cache link previews hard. Force a re-fetch or old shares keep showing
+the previous state:
+
+- Facebook — [Sharing Debugger](https://developers.facebook.com/tools/debug/) → **Scrape Again**
+- LinkedIn — [Post Inspector](https://www.linkedin.com/post-inspector/)
+
+---|---|---|---|
 | A | `@` | `185.199.108.153` | Automatic |
 | A | `@` | `185.199.109.153` | Automatic |
 | A | `@` | `185.199.110.153` | Automatic |
