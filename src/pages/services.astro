@@ -1,32 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-
-const services = [
-  {
-    label: 'Integration',
-    title: 'Make your systems talk to each other',
-    body: 'Most businesses already own the software they need — it just does not connect. Sales sit in one place, stock in another, the accountant gets a spreadsheet at month end. We join them up so a figure entered once appears everywhere it should, with a record of every move in case anyone asks.',
-    forWho: 'Best when you have more than two systems and someone is copying between them.',
-  },
-  {
-    label: 'Automation',
-    title: 'Stop doing it by hand',
-    body: 'The Monday report someone rebuilds from scratch. The invoices typed in twice. The documents read one at a time to pull out three numbers. These can run on their own — including the steps that need a bit of judgement, which software can now handle.',
-    forWho: 'Best when a task is repetitive, follows rules, and eats hours every week.',
-  },
-  {
-    label: 'Migration',
-    title: 'Get off the spreadsheet safely',
-    body: 'Moving years of records onto a real system is the part everyone puts off, because getting it wrong is expensive. We check every row against the old file before anything is switched, keep the old version running alongside, and only cut over once you agree the numbers match.',
-    forWho: 'Best when the spreadsheet has become too big, too slow, or too risky to trust.',
-  },
-  {
-    label: 'Custom software',
-    title: 'Build the thing that does not exist yet',
-    body: 'Sometimes there is no product that fits, because the way you work is the reason you win. The systems in our work are all this: built for one business, around how that business actually operates, and now running it every day.',
-    forWho: 'Best when off-the-shelf software almost fits but forces you to change how you work.',
-  },
-];
+import ServiceDiagram from '../components/ServiceDiagram.astro';
 
 const steps = [
   {
@@ -65,15 +39,16 @@ const steps = [
   </section>
 
   <section class="section">
-    <div class="wrap svc-grid">
-      {services.map((s) => (
-        <div class="card-surface svc">
-          <span class="svc-label">{s.label}</span>
-          <h2 class="h-md">{s.title}</h2>
-          <p class="muted">{s.body}</p>
-          <p class="svc-for">{s.forWho}</p>
-        </div>
-      ))}
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">How it fits together</p>
+        <h2 class="h-lg">Pick the one that sounds like your problem</h2>
+        <p class="lede">
+          Each of these takes something you already have and gives you something
+          back. Tap through them to see which parts of your setup it touches.
+        </p>
+      </div>
+      <ServiceDiagram />
     </div>
   </section>
 
@@ -116,28 +91,10 @@ const steps = [
   .head-inner { display: grid; gap: 1.1rem; }
   .head-title { max-width: 20ch; }
 
-  .svc-grid {
-    display: grid;
-    gap: 1.25rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-  }
-  .svc { display: grid; gap: 0.7rem; align-content: start; }
-  .svc-label {
-    font-family: var(--f-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .svc-for {
-    font-size: 0.875rem;
-    line-height: 1.55;
-    color: var(--ink-3);
-    border-top: 1px solid var(--line);
-    padding-top: 0.8rem;
-    margin-top: 0.25rem;
-  }
+  
+  
+  
+  
 
   .steps {
     list-style: none;

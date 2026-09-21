@@ -24,7 +24,7 @@ const live = status === 'production';
           alt={`${name} — product screenshot`}
           widths={[480, 760, 1120]}
           sizes={featured ? '(min-width: 62rem) 46rem, 92vw' : '(min-width: 62rem) 24rem, 92vw'}
-          loading={featured ? 'eager' : 'lazy'}
+          loading="lazy"
         />
       ) : (
         <div class="placeholder" role="img" aria-label={`${name} — screenshot not yet available`}>

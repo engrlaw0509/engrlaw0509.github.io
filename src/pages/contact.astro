@@ -2,141 +2,384 @@
 import Base from '../layouts/Base.astro';
 
 const email = 'lmiautomatalabs@gmail.com';
-const subject = encodeURIComponent('Project enquiry');
-const body = encodeURIComponent(
-  [
-    'Hello,',
-    '',
-    'My business: ',
-    'What we do: ',
-    '',
-    'The part of the week that goes wrong:',
-    '',
-    '',
-    'What we use now (spreadsheets, apps, paper):',
-    '',
-    '',
-    'Thanks,',
-  ].join('\n'),
-);
 
-const prompts = [
-  'What takes the longest every week, and who does it?',
-  'What gets typed in more than once?',
-  'What breaks when the person who normally does it is away?',
-  'What do you wish you could see without asking anyone?',
+/**
+ * Free Web3Forms access key. Get one in about thirty seconds at
+ * https://web3forms.com — you enter this address and they mail you the key, no
+ * account needed — then paste it below and rebuild.
+ *
+ * Until it is set the form still works: the submit button composes a filled-in
+ * email instead of posting. That keeps the page useful today without pretending
+ * a submission was delivered when there is nowhere to deliver it.
+ */
+const WEB3FORMS_KEY = '';
+const hasEndpoint = WEB3FORMS_KEY.length > 0;
+
+const sizes = ['Just me', '2–10 people', '11–50 people', 'More than 50'];
+const sectors = [
+  'Food & beverage / cafe',
+  'Retail',
+  'Construction',
+  'Insurance / financial advice',
+  'Logistics',
+  'Services',
+  'Something else',
 ];
-
-const channels = [
-  { label: 'Email', value: email, href: `mailto:${email}`, note: 'Usually answered same day' },
-  {
-    label: 'LinkedIn',
-    value: 'Lawrence Ignacio',
-    href: 'https://www.linkedin.com/in/lawrence-ignacio-97ba0013a/',
-    note: 'Connect or message',
-  },
-  {
-    label: 'GitHub',
-    value: 'engrlaw0509',
-    href: 'https://github.com/engrlaw0509',
-    note: 'Code and open work',
-  },
+const runsOn = [
+  'Spreadsheets',
+  'Pen and paper',
+  'A point-of-sale system',
+  'Accounting software',
+  'Messenger / Viber threads',
+  'An app we already paid for',
+];
+const needs = [
+  'Connect systems we already have',
+  'Automate something repetitive',
+  'Move off spreadsheets',
+  'Build something new',
+  'Not sure yet',
 ];
 ---
 
 <Base
-  title="Contact"
-  description="Talk to LMI Automata Labs about software for your business. Metro Manila, Philippines."
+  title="Get in touch"
+  description="Tell LMI Automata Labs how your business runs today and what is slowing it down. Metro Manila, Philippines."
 >
   <section class="page-head">
     <div class="wrap head-inner">
-      <p class="eyebrow">Start here</p>
-      <h1 class="h-xl head-title">Tell us where the week goes wrong.</h1>
+      <p class="eyebrow">Get in touch</p>
+      <h1 class="h-xl head-title">Tell us how your business runs today.</h1>
       <p class="lede">
-        You do not need a specification, a budget, or the right words for it. The most
-        useful first message describes one job that takes too long and who has to do it.
+        No specification needed, and no budget figure. The most useful thing you can
+        describe is one job that takes too long and who has to do it. Five minutes here
+        saves a meeting later.
       </p>
-      <div class="btn-row">
-        <a class="btn" href={`mailto:${email}?subject=${subject}&body=${body}`}>
-          Email us
-        </a>
-        <a class="btn btn-ghost" href={`mailto:${email}`}>{email}</a>
-      </div>
     </div>
   </section>
 
   <section class="section">
-    <div class="wrap contact-grid">
-      <div class="card-surface panel">
-        <h2 class="h-md">If you are not sure what to write</h2>
-        <ul class="prompts">
-          {prompts.map((p) => <li>{p}</li>)}
-        </ul>
-        <p class="after">
-          Any one of those is enough to start. If it turns out software is not the answer,
-          we will say so — that conversation costs you nothing either way.
-        </p>
-      </div>
+    <div class="wrap layout">
+      <form
+        class="form card-surface"
+        method={hasEndpoint ? 'POST' : undefined}
+        action={hasEndpoint ? 'https://api.web3forms.com/submit' : undefined}
+        data-mailto={hasEndpoint ? undefined : email}
+      >
+        {hasEndpoint && <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />}
+        {hasEndpoint && (
+          <input type="hidden" name="subject" value="New enquiry from lmiautomatalabs.com" />
+        )}
+        {/* Honeypot — bots fill it, people never see it. */}
+        <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true" />
 
-      <div class="channels">
-        {channels.map((c) => (
-          <a class="card-surface channel" href={c.href} rel="noopener">
-            <span class="channel-label">{c.label}</span>
-            <span class="channel-value">{c.value}</span>
-            <span class="channel-note">{c.note}</span>
-          </a>
-        ))}
-        <p class="based">Based in Metro Manila. We work across the Philippines, and remotely for clients abroad.</p>
-      </div>
+        <!-- ---------- who ---------- -->
+        <fieldset class="group">
+          <legend class="legend"><span class="legend-n">01</span> About you</legend>
+
+          <div class="row">
+            <label class="field">
+              <span class="label">Your name <em>*</em></span>
+              <input class="input" type="text" name="name" required autocomplete="name" />
+            </label>
+            <label class="field">
+              <span class="label">Business name</span>
+              <input class="input" type="text" name="business" autocomplete="organization" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <span class="label">Email <em>*</em></span>
+              <input class="input" type="email" name="email" required autocomplete="email" />
+            </label>
+            <label class="field">
+              <span class="label">Mobile or Viber</span>
+              <input class="input" type="tel" name="phone" autocomplete="tel"
+                     placeholder="09XX XXX XXXX" />
+            </label>
+          </div>
+
+          <div class="row">
+            <label class="field">
+              <span class="label">What line of work?</span>
+              <select class="input" name="sector">
+                <option value="">Choose one…</option>
+                {sectors.map((s) => <option value={s}>{s}</option>)}
+              </select>
+            </label>
+            <label class="field">
+              <span class="label">How many people?</span>
+              <select class="input" name="size">
+                <option value="">Choose one…</option>
+                {sizes.map((s) => <option value={s}>{s}</option>)}
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- ---------- current system ---------- -->
+        <fieldset class="group">
+          <legend class="legend"><span class="legend-n">02</span> How it works now</legend>
+
+          <span class="label">What does the business run on today? Tick any that apply.</span>
+          <div class="checks">
+            {runsOn.map((r) => (
+              <label class="check">
+                <input type="checkbox" name="runs_on" value={r} />
+                <span>{r}</span>
+              </label>
+            ))}
+          </div>
+
+          <label class="field">
+            <span class="label">Walk us through one job that takes too long <em>*</em></span>
+            <span class="hint">
+              Who does it, how often, and what they have to open to get it done. Plain words
+              are fine — describe it the way you would to a new employee.
+            </span>
+            <textarea class="input area" name="current_process" rows="5" required
+              placeholder="Every fortnight our supervisor collects the attendance notebooks from three sites, types them into a spreadsheet, then types the totals again into payroll. It takes a full evening and the numbers rarely match first time."></textarea>
+          </label>
+        </fieldset>
+
+        <!-- ---------- needs ---------- -->
+        <fieldset class="group">
+          <legend class="legend"><span class="legend-n">03</span> What you need</legend>
+
+          <span class="label">Which of these sounds closest?</span>
+          <div class="checks">
+            {needs.map((n) => (
+              <label class="check">
+                <input type="checkbox" name="needs" value={n} />
+                <span>{n}</span>
+              </label>
+            ))}
+          </div>
+
+          <label class="field">
+            <span class="label">What would good look like?</span>
+            <span class="hint">
+              If this were solved, what would be different on a Monday morning?
+            </span>
+            <textarea class="input area" name="outcome" rows="3"
+              placeholder="Payroll done in twenty minutes, and I can see each site's hours without ringing anyone."></textarea>
+          </label>
+        </fieldset>
+
+        <div class="submit">
+          <button class="btn" type="submit">Send enquiry</button>
+          <p class="privacy">
+            Goes straight to {email}. We use it to reply to you and nothing else &mdash;
+            no list, no forwarding, no third parties.
+          </p>
+        </div>
+      </form>
+
+      <aside class="side">
+        <div class="card-surface panel">
+          <h2 class="h-md">Rather just message?</h2>
+          <p class="muted side-p">
+            The form helps us come to the first call already understanding your setup, but a
+            one-line message is a perfectly good start.
+          </p>
+          <div class="links">
+            <a href={`mailto:${email}`}>
+              <span class="l-label">Email</span>
+              <span class="l-value">{email}</span>
+            </a>
+            <a href="https://www.linkedin.com/in/lawrence-ignacio-97ba0013a/" rel="noopener">
+              <span class="l-label">LinkedIn</span>
+              <span class="l-value">Lawrence Ignacio</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="card-surface panel">
+          <h2 class="h-md">What happens next</h2>
+          <ol class="next">
+            <li><strong>We read it properly.</strong> Usually a reply the same day.</li>
+            <li><strong>A short call.</strong> Thirty minutes, no charge, no pitch deck.</li>
+            <li>
+              <strong>An honest answer.</strong> Including &ldquo;a cheaper tool already
+              does this&rdquo; if that is the truth.
+            </li>
+          </ol>
+        </div>
+
+        <p class="based">
+          Based in Metro Manila. We work across the Philippines, and remotely for clients
+          abroad.
+        </p>
+      </aside>
     </div>
   </section>
+
+  {!hasEndpoint && (
+    <script is:inline>
+      // No form endpoint configured yet, so compose a filled-in email instead of
+      // posting into the void. Set WEB3FORMS_KEY in src/pages/contact.astro to
+      // switch this to a real submission.
+      document.querySelector('form[data-mailto]')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const f = e.target;
+        if (!f.reportValidity()) return;
+        const d = new FormData(f);
+        const many = (k) => d.getAll(k).filter(Boolean).join(', ') || '—';
+        const one = (k) => (d.get(k) || '').toString().trim() || '—';
+
+        const body = [
+          `Name:      ${one('name')}`,
+          `Business:  ${one('business')}`,
+          `Email:     ${one('email')}`,
+          `Phone:     ${one('phone')}`,
+          `Sector:    ${one('sector')}`,
+          `Size:      ${one('size')}`,
+          '',
+          `Runs on today: ${many('runs_on')}`,
+          '',
+          'The job that takes too long:',
+          one('current_process'),
+          '',
+          `Looking for: ${many('needs')}`,
+          '',
+          'What good would look like:',
+          one('outcome'),
+        ].join('\n');
+
+        window.location.href =
+          `mailto:${f.dataset.mailto}` +
+          `?subject=${encodeURIComponent('Enquiry from ' + one('business') || 'Website enquiry')}` +
+          `&body=${encodeURIComponent(body)}`;
+      });
+    </script>
+  )}
 </Base>
 
 <style>
   .page-head { padding-block: clamp(2.5rem, 6vw, 4.5rem) 0; }
-  .head-inner { display: grid; gap: 1.2rem; justify-items: start; }
-  .head-title { max-width: 18ch; }
+  .head-inner { display: grid; gap: 1.1rem; }
+  .head-title { max-width: 20ch; }
 
-  .contact-grid { display: grid; gap: 1.25rem; align-items: start; }
-  @media (min-width: 58rem) { .contact-grid { grid-template-columns: 1.3fr 1fr; gap: 2rem; } }
+  .layout { display: grid; gap: 1.5rem; align-items: start; }
+  @media (min-width: 64rem) {
+    .layout { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 2rem; }
+  }
 
-  .panel { display: grid; gap: 1rem; }
-  .prompts { margin: 0; padding: 0; list-style: none; display: grid; gap: 0; }
-  .prompts li {
-    padding-block: 0.85rem;
-    border-top: 1px solid var(--line-soft);
-    color: var(--ink-2);
-  }
-  .prompts li:first-child { border-top: 0; padding-top: 0; }
-  .after { color: var(--ink-3); font-size: 0.9375rem; }
+  /* ---------------- form ---------------- */
+  .form { display: grid; gap: clamp(1.75rem, 3vw, 2.5rem); }
+  .botcheck { position: absolute; left: -9999px; opacity: 0; }
 
-  .channels { display: grid; gap: 0.85rem; align-content: start; }
-  .channel {
-    display: grid;
-    gap: 0.15rem;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+  .group { border: 0; margin: 0; padding: 0; display: grid; gap: 1rem; }
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: -0.02em;
+    padding: 0;
+    margin-bottom: 0.25rem;
   }
-  .channel:hover {
-    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
-    box-shadow: var(--shadow);
-  }
-  .channel-label {
+  .legend-n {
     font-family: var(--f-mono);
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
     color: var(--accent);
   }
-  .channel-value {
-    font-family: var(--f-display);
-    font-weight: 600;
-    font-size: 1.0625rem;
-    letter-spacing: -0.02em;
-    word-break: break-word;
+
+  .row { display: grid; gap: 1rem; }
+  @media (min-width: 40rem) { .row { grid-template-columns: 1fr 1fr; } }
+
+  .field { display: grid; gap: 0.35rem; }
+  .label { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+  .label em { font-style: normal; color: var(--accent); }
+  .hint { font-size: 0.8125rem; line-height: 1.5; color: var(--ink-3); }
+
+  .input {
+    font-family: var(--f-body);
+    font-size: 0.9375rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 0.7rem 0.85rem;
+    width: 100%;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
   }
-  .channel-note { font-size: 0.875rem; color: var(--ink-3); }
-  .based { font-size: 0.875rem; color: var(--ink-3); margin-top: 0.35rem; }
+  .input::placeholder { color: var(--ink-3); }
+  .input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-wash);
+  }
+  .area { resize: vertical; line-height: 1.6; min-height: 5.5rem; }
+
+  .checks {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 0.6rem 0.8rem;
+    cursor: pointer;
+  }
+  .check:hover { border-color: var(--ink-3); }
+  .check input { accent-color: var(--accent); width: 1rem; height: 1rem; flex: none; }
+  .check:has(input:checked) {
+    border-color: var(--accent);
+    color: var(--ink);
+    background: var(--accent-wash);
+  }
+
+  .submit { display: grid; gap: 0.8rem; justify-items: start; }
+  .privacy { font-size: 0.8125rem; color: var(--ink-3); max-width: 58ch; }
+
+  /* ---------------- side ---------------- */
+  .side { display: grid; gap: 1.25rem; align-content: start; }
+  .panel { display: grid; gap: 0.8rem; }
+  .side-p { font-size: 0.9375rem; }
+
+  .links { display: grid; gap: 0.6rem; }
+  .links a {
+    display: grid;
+    gap: 0.1rem;
+    text-decoration: none;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--bg);
+  }
+  .links a:hover { border-color: var(--accent); }
+  .l-label {
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .l-value { font-weight: 600; font-size: 0.9375rem; color: var(--ink); word-break: break-word; }
+  .links a:hover .l-value { color: var(--accent); }
+
+  .next {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.6rem;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+  .next strong { color: var(--ink); font-weight: 600; }
+  .next::marker { color: var(--accent); }
+
+  .based { font-size: 0.875rem; color: var(--ink-3); }
 </style>

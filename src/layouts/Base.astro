@@ -60,7 +60,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
   />
 </head>
 <body>
@@ -69,7 +69,10 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <header class="masthead">
     <div class="wrap masthead-inner">
       <a class="brand" href="/">
-        <img class="brand-mark" src="/brand/mark-wide.png" height="34" alt="" />
+        <picture>
+          <source srcset="/brand/mark-wide-light.png" media="(prefers-color-scheme: dark)" />
+          <img class="brand-mark" src="/brand/mark-wide.png" height="34" alt="" />
+        </picture>
         <span class="brand-name">LMI Automata Labs</span>
       </a>
 
@@ -92,7 +95,10 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     <div class="wrap footer-inner">
       <div class="footer-brand">
         <span class="footer-name">
-          <img src="/brand/mark-wide.png" height="26" alt="" />
+          <picture>
+            <source srcset="/brand/mark-wide-light.png" media="(prefers-color-scheme: dark)" />
+            <img src="/brand/mark-wide.png" height="26" alt="" />
+          </picture>
           LMI Automata Labs
         </span>
         <p class="footer-note">
@@ -128,12 +134,8 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
       position: sticky;
       top: 0;
       z-index: 40;
-      background: color-mix(in srgb, var(--bg) 88%, transparent);
-      backdrop-filter: saturate(160%) blur(12px);
+      background: var(--bg);
       border-bottom: 1px solid var(--line);
-    }
-    @supports not (backdrop-filter: blur(1px)) {
-      .masthead { background: var(--bg); }
     }
     .masthead-inner {
       display: flex;
@@ -158,12 +160,6 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     .brand-mark {
       height: 34px;
       width: auto;
-      border-radius: 8px;
-      /* The mark is supplied on white, so give it a deliberate light chip
-         rather than letting it sit as a white box on the dark theme. The
-         asset already carries its own clear space, so no padding here. */
-      background: #FFFFFF;
-      border: 1px solid var(--line);
       flex: none;
     }
     .brand:hover .brand-name { color: var(--accent); }
@@ -213,9 +209,6 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     .footer-name img {
       height: 26px;
       width: auto;
-      border-radius: 6px;
-      background: #FFFFFF;
-      border: 1px solid var(--line);
       flex: none;
     }
     .footer-note { color: var(--ink-2); font-size: 0.9375rem; max-width: 42ch; }

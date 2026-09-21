@@ -10,10 +10,11 @@
  *   2. finds the real ink bounds and cuts the mark and the full lockup apart;
  *   3. writes PNGs at the sizes the site and the favicon need.
  *
- * Backgrounds stay WHITE rather than transparent on purpose. The mark's brain
- * motif is filled white, so keying the background out would make it hollow on
- * the dark theme. The header sits it on a white chip instead, which works on
- * both grounds from one asset.
+ * Backgrounds are keyed out to alpha. Because the artwork is line work, a dark
+ * background then shows through the strokes, so a second variant
+ * (mark-wide-light.png) repaints the navy pale for use on the dark theme. The
+ * Apple touch icon is the one asset that keeps a white ground, since iOS
+ * composites transparency onto black.
  *
  * Replacing the artwork: drop a new file at SRC (or pass a path as argv[2]) and
  * re-run. If you ever get an SVG of this logo, use that instead — it will be
@@ -200,43 +201,90 @@ console.log(
   `optical centre is ${left},${top}`,
 );
 
-// Square variants — only for the favicon and touch icon, which must be square.
-for (const size of [512, 180, 64]) {
-  const name = size === 512 ? 'mark.png' : `mark-${size}.png`;
-  await sharp(markSquare).resize(size, size, { kernel: 'lanczos3' })
-    .png({ compressionLevel: 9 }).toFile(path.join(OUT, name));
-  console.log(`${OUT}/${name}  ${size}x${size}  (square, favicon)`);
+/**
+ * Key the white ground out into an alpha channel.
+ *
+ * Alpha comes from how far the pixel is from white, which keeps the
+ * anti-aliased edges soft instead of jagged — a hard threshold would staircase
+ * every curve in the brain motif. Both brand colours survive it because each
+ * has a low minimum channel: navy is dark all round, and the cyan's red channel
+ * is low even though the colour is bright.
+ *
+ * `lightInk` additionally repaints the dark navy as a pale tint, for use on the
+ * dark theme where the navy would otherwise disappear into the background. The
+ * cyan is already bright, so it is left alone and the two-tone identity holds.
+ */
+async function keyOut(img, { lightInk = false } = {}) {
+  const { data: px, info: meta } = await img.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const out = Buffer.alloc(meta.width * meta.height * 4);
+  const LIGHT = [207, 226, 242];
+
+  for (let s = 0, d = 0; d < out.length; s += meta.channels, d += 4) {
+    let r = px[s], g = px[s + 1], b = px[s + 2];
+    const mn = Math.min(r, g, b);
+    const mx = Math.max(r, g, b);
+
+    if (lightInk && mx < 150) [r, g, b] = LIGHT;   // navy -> pale; cyan untouched
+
+    out[d] = r; out[d + 1] = g; out[d + 2] = b;
+    out[d + 3] = Math.max(0, Math.min(255, Math.round((255 - mn) * 1.25)));
+  }
+  return sharp(out, { raw: { width: meta.width, height: meta.height, channels: 4 } });
 }
 
-// Natural-aspect variant for the header and footer. The mark is landscape
+// Square variants. The favicon is transparent; the Apple touch icon keeps its
+// white ground because iOS composites transparency onto black.
+for (const size of [512, 64]) {
+  const name = size === 512 ? 'mark.png' : `mark-${size}.png`;
+  await (await keyOut(sharp(markSquare)))
+    .resize(size, size, { kernel: 'lanczos3' })
+    .png({ compressionLevel: 9 }).toFile(path.join(OUT, name));
+  console.log(`${OUT}/${name}  ${size}x${size}  (square, transparent)`);
+}
+await sharp(markSquare).resize(180, 180, { kernel: 'lanczos3' })
+  .flatten({ background: '#FFFFFF' })
+  .png({ compressionLevel: 9 }).toFile(path.join(OUT, 'mark-180.png'));
+console.log(`${OUT}/mark-180.png  180x180  (square, white — iOS touch icon)`);
+
+// Natural-aspect variants for the header and footer. The mark is landscape
 // (775x530 here), so squaring it would waste ~40% of the height and render the
-// artwork small inside its chip — which is what made it look weak in the header.
-const wideAir = Math.round(mh * 0.07);
-const markWide = await cleanImg()
-  .extract({ left: markX.x0, top: markY.y0, width: mw, height: mh })
-  .median(3)
-  .extend({
-    top: wideAir, bottom: wideAir, left: wideAir, right: wideAir,
-    background: '#FFFFFF',
-  })
-  .resize({ height: 160, kernel: 'lanczos3' })
-  .png({ compressionLevel: 9 })
-  .toBuffer();
-await sharp(markWide).toFile(path.join(OUT, 'mark-wide.png'));
-const wm = await sharp(markWide).metadata();
-console.log(`${OUT}/mark-wide.png  ${wm.width}x${wm.height}  (header/footer)`);
+// artwork small — which is what made it look weak in the header.
+const wideAir = Math.round(mh * 0.04);
+const wideBase = () =>
+  cleanImg()
+    .extract({ left: markX.x0, top: markY.y0, width: mw, height: mh })
+    .median(3)
+    .extend({
+      top: wideAir, bottom: wideAir, left: wideAir, right: wideAir,
+      background: '#FFFFFF',
+    });
+
+for (const [name, opts] of [
+  ['mark-wide.png', {}],
+  ['mark-wide-light.png', { lightInk: true }],
+]) {
+  const buf = await (await keyOut(wideBase(), opts))
+    .resize({ height: 160, kernel: 'lanczos3' })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+  await sharp(buf).toFile(path.join(OUT, name));
+  const m = await sharp(buf).metadata();
+  console.log(`${OUT}/${name}  ${m.width}x${m.height}  (transparent${opts.lightInk ? ', pale ink for dark theme' : ''})`);
+}
 
 // The full lockup — mark plus wordmark — for the share card.
 const lw = gx1 - gx0 + 1;
 const lh = gy1 - gy0 + 1;
-const lockAir = Math.round(lw * 0.08);
-const lockup = await cleanImg()
-  .extract({ left: gx0, top: gy0, width: lw, height: lh })
-  .median(3)
-  .extend({
-    top: lockAir, bottom: lockAir, left: lockAir, right: lockAir,
-    background: '#FFFFFF',
-  })
+const lockAir = Math.round(lw * 0.06);
+const lockup = await (await keyOut(
+  cleanImg()
+    .extract({ left: gx0, top: gy0, width: lw, height: lh })
+    .median(3)
+    .extend({
+      top: lockAir, bottom: lockAir, left: lockAir, right: lockAir,
+      background: '#FFFFFF',
+    }),
+))
   .resize({ width: 900, kernel: 'lanczos3' })
   .png({ compressionLevel: 9 })
   .toBuffer();

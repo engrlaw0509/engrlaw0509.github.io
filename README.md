@@ -107,6 +107,31 @@ Replacing any image is just dropping a better file over the old one and rebuildi
 
 ---
 
+## The enquiry form
+
+`/contact/` collects name, business, contact details, sector, size, what the business runs
+on today, the job that takes too long, and what they need. GitHub Pages is static and
+cannot receive a POST, so where it goes depends on one constant at the top of
+[`src/pages/contact.astro`](src/pages/contact.astro):
+
+```js
+const WEB3FORMS_KEY = '';   // empty -> mailto fallback
+```
+
+**As shipped (key empty)** the submit button composes a filled-in email in the visitor's
+mail client. It works with no setup, but it asks the visitor to send the mail themselves,
+and some will not bother.
+
+**Set the key** and the form POSTs to Web3Forms, which mails the submission straight to
+`lmiautomatalabs@gmail.com` with nothing for the visitor to do. Getting a key takes about
+thirty seconds at <https://web3forms.com> — you enter that address, they mail you the key,
+there is no account. Paste it in and rebuild. **This is worth doing**; it is the difference
+between an enquiry landing and an enquiry being abandoned.
+
+A hidden `botcheck` honeypot field is already in place either way.
+
+---
+
 ## Design
 
 Tokens live at the top of [`src/styles/global.css`](src/styles/global.css), defined three

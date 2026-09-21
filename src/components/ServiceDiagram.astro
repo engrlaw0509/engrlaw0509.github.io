@@ -1,0 +1,282 @@
+---
+/**
+ * Interactive services diagram.
+ *
+ * Deliberately CSS-only: the four views are radio inputs plus sibling
+ * selectors, so it works with JavaScript off or blocked, it is keyboard
+ * navigable for free (arrow keys move through a radio group), and there is no
+ * script that can fail and leave the section empty.
+ *
+ * Every view is rendered into the DOM and one is shown, rather than one stage
+ * being rewired per selection — that keeps the CSS simple enough to be obviously
+ * correct, at the cost of a little markup.
+ */
+const services = [
+  {
+    id: 'integration',
+    tab: 'Integration',
+    title: 'Make your systems talk to each other',
+    body:
+      'Most businesses already own the software they need — it just does not connect. ' +
+      'Sales sit in one place, stock in another, the accountant gets a spreadsheet at ' +
+      'month end. We join them up so a figure entered once appears everywhere it should.',
+    forWho: 'Best when you have more than two systems and someone is copying between them.',
+    inputs: ['Point of sale', 'Accounting', 'Stock list', 'Online orders'],
+    outputs: ['One set of numbers', 'Nothing typed twice', 'A trail of every change'],
+  },
+  {
+    id: 'automation',
+    tab: 'Automation',
+    title: 'Stop doing it by hand',
+    body:
+      'The Monday report someone rebuilds from scratch. The invoices typed in twice. ' +
+      'The documents read one at a time to pull out three numbers. These can run on ' +
+      'their own — including the steps that need a bit of judgement.',
+    forWho: 'Best when a task is repetitive, follows rules, and eats hours every week.',
+    inputs: ['The Monday report', 'Invoices', 'Documents to read', 'Reminders to send'],
+    outputs: ['Runs on a schedule', 'Ready before you ask', 'Hours back every week'],
+  },
+  {
+    id: 'migration',
+    tab: 'Migration',
+    title: 'Get off the spreadsheet safely',
+    body:
+      'Moving years of records onto a real system is the part everyone puts off, because ' +
+      'getting it wrong is expensive. We check every row against the old file first, keep ' +
+      'the old version running alongside, and only cut over once you agree they match.',
+    forWho: 'Best when the spreadsheet has become too big, too slow, or too risky to trust.',
+    inputs: ['Years of spreadsheets', 'Paper records', 'A tool you outgrew'],
+    outputs: ['One real database', 'Checked row by row', 'Reversible until you are sure'],
+  },
+  {
+    id: 'custom',
+    tab: 'Custom software',
+    title: 'Build the thing that does not exist yet',
+    body:
+      'Sometimes no product fits, because the way you work is the reason you win. The ' +
+      'systems in our work are all this: built for one business, around how that business ' +
+      'actually operates, and now running it every day.',
+    forWho: 'Best when off-the-shelf software almost fits but forces you to change how you work.',
+    inputs: ['How you actually work', 'The bit no product fits', 'Your own rules'],
+    outputs: ['A system built round you', 'Yours to change', 'Running the business'],
+  },
+];
+---
+
+<div class="diagram">
+  {services.map((s, i) => (
+    <input
+      type="radio"
+      name="service"
+      id={`svc-${s.id}`}
+      class="picker"
+      checked={i === 0}
+    />
+  ))}
+
+  <div class="tabs" role="group" aria-label="Choose a service">
+    {services.map((s) => (
+      <label class="tab" for={`svc-${s.id}`}>{s.tab}</label>
+    ))}
+  </div>
+
+  <div class="views">
+    {services.map((s) => (
+      <div class:list={['view', `view-${s.id}`]}>
+        <div class="stage">
+          <div class="col">
+            <span class="col-h">What you have now</span>
+            <ul class="nodes">
+              {s.inputs.map((n) => <li class="node">{n}</li>)}
+            </ul>
+          </div>
+
+          <div class="wire" aria-hidden="true"><span class="dot"></span></div>
+
+          <div class="hub">
+            <picture>
+              <source srcset="/brand/mark-wide-light.png" media="(prefers-color-scheme: dark)" />
+              <img src="/brand/mark-wide.png" alt="" width="229" height="160" loading="lazy" />
+            </picture>
+            <span class="hub-l">{s.tab}</span>
+          </div>
+
+          <div class="wire" aria-hidden="true"><span class="dot"></span></div>
+
+          <div class="col">
+            <span class="col-h">What you get</span>
+            <ul class="nodes">
+              {s.outputs.map((n) => <li class="node is-out">{n}</li>)}
+            </ul>
+          </div>
+        </div>
+
+        <div class="detail">
+          <h3 class="h-md">{s.title}</h3>
+          <p class="muted">{s.body}</p>
+          <p class="for-who">{s.forWho}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .diagram { display: grid; gap: 1.5rem; }
+
+  /* Off-screen but still focusable, so the group stays keyboard navigable. */
+  .picker {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* ---------------- tabs ---------------- */
+  .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .tab {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    padding: 0.55rem 1.05rem;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-2);
+    transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+  }
+  .tab:hover { color: var(--ink); border-color: var(--ink-3); }
+
+  /* ---------------- views ---------------- */
+  .view { display: none; }
+  .views { display: grid; }
+
+  /* Selected tab + matching view. One pair per service. */
+  #svc-integration:checked ~ .tabs .tab[for='svc-integration'],
+  #svc-automation:checked  ~ .tabs .tab[for='svc-automation'],
+  #svc-migration:checked   ~ .tabs .tab[for='svc-migration'],
+  #svc-custom:checked      ~ .tabs .tab[for='svc-custom'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+  #svc-integration:checked ~ .views .view-integration,
+  #svc-automation:checked  ~ .views .view-automation,
+  #svc-migration:checked   ~ .views .view-migration,
+  #svc-custom:checked      ~ .views .view-custom {
+    display: grid;
+    gap: 1.5rem;
+  }
+  /* Visible focus ring on the active tab when driven by keyboard. */
+  .picker:focus-visible ~ .tabs .tab[for] { outline: none; }
+  #svc-integration:focus-visible ~ .tabs .tab[for='svc-integration'],
+  #svc-automation:focus-visible  ~ .tabs .tab[for='svc-automation'],
+  #svc-migration:focus-visible   ~ .tabs .tab[for='svc-migration'],
+  #svc-custom:focus-visible      ~ .tabs .tab[for='svc-custom'] {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  /* ---------------- stage ---------------- */
+  .stage {
+    display: grid;
+    gap: 1.25rem;
+    align-items: center;
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+    background:
+      radial-gradient(80% 120% at 50% 0%, var(--accent-wash), transparent 70%),
+      var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
+  @media (min-width: 60rem) {
+    .stage { grid-template-columns: 1fr auto auto auto 1fr; gap: 0 1.25rem; }
+  }
+
+  .col { display: grid; gap: 0.7rem; align-content: start; }
+  .col-h {
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .nodes { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .node {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    padding: 0.6rem 0.85rem;
+    border-radius: var(--r);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink-2);
+  }
+  .node.is-out {
+    border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* The connector, echoing the circuit traces in the mark. */
+  .wire {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 2.5rem;
+  }
+  .wire::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
+  }
+  .wire .dot {
+    width: 0.5rem; height: 0.5rem;
+    border-radius: 50%;
+    background: var(--cyan);
+    position: relative;
+  }
+  @media (min-width: 60rem) {
+    .wire { min-height: 0; width: 4.5rem; }
+    .wire::before {
+      inset: auto 0;
+      width: auto; height: 2px;
+      background: linear-gradient(to right, transparent, var(--cyan), transparent);
+    }
+  }
+
+  /* ---------------- hub ---------------- */
+  .hub {
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--r-lg);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    background: var(--bg);
+    box-shadow: var(--shadow);
+  }
+  .hub img { height: 44px; width: auto; }
+  .hub-l {
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-align: center;
+  }
+
+  /* ---------------- detail ---------------- */
+  .detail { display: grid; gap: 0.7rem; max-width: 70ch; }
+  .for-who {
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--ink-3);
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+</style>
