@@ -7,104 +7,103 @@
   on Facebook, LinkedIn, Messenger or Viber.
 
   Rendered at exactly 1200x630 (the size every platform crops to) by:
-      node scripts/og.mjs
-
-  Deliberately light: most social feeds are white or near-black, and the pale
-  ledger ground with heavy black type reads as neither.
+      npm run og
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
 <style>
   * { box-sizing: border-box; margin: 0; }
   html, body { width: 1200px; height: 630px; }
   body {
-    background: #EDF1E9;
-    color: #131A15;
-    font-family: "Source Serif 4", Georgia, serif;
-    display: grid;
-    grid-template-columns: 9rem minmax(0, 1fr);
-    align-content: stretch;
-    padding: 4rem 4.5rem;
-    gap: 0 3rem;
-  }
-
-  /* the ledger margin */
-  .rail {
-    border-right: 1px solid #D0D9C9;
-    padding-right: 1.5rem;
-    text-align: right;
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #5F6B65;
+    position: relative;
+    background: #FFFFFF;
+    color: #0B1220;
+    font-family: "Plus Jakarta Sans", Arial, sans-serif;
+    padding: 4.5rem 5rem;
     display: grid;
     align-content: space-between;
+    overflow: hidden;
   }
-  .rail span { display: block; }
-  .rail .ph { color: #17439E; }
-
-  .body { display: grid; align-content: space-between; }
-
-  .eyebrow {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 0.875rem;
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: #17439E;
+  /* soft accent wash, matching the site hero */
+  body::before {
+    content: "";
+    position: absolute;
+    inset: -14rem 0 auto;
+    height: 34rem;
+    background: radial-gradient(60% 60% at 50% 50%, rgba(31,94,255,.13), transparent 70%);
   }
 
+  .top { position: relative; display: flex; align-items: center; gap: .7rem; }
+  .mark { width: 2.5rem; height: 2.5rem; border-radius: .7rem; background: #1F5EFF; display: grid; place-items: center; }
+  .brand {
+    font-family: "Sora", sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: -.02em;
+  }
+
+  .mid { position: relative; }
   h1 {
-    font-family: "Archivo", sans-serif;
+    font-family: "Sora", sans-serif;
     font-weight: 800;
-    font-size: 4.75rem;
-    line-height: 0.97;
-    letter-spacing: -0.032em;
-    max-width: 21ch;
+    font-size: 4.4rem;
+    line-height: 1.02;
+    letter-spacing: -.045em;
+    max-width: 20ch;
   }
-  h1 em { font-style: normal; color: #17439E; }
+  h1 em { font-style: normal; color: #1F5EFF; }
 
-  .foot {
+  .bottom {
+    position: relative;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 2rem;
-    border-top: 1px solid #D0D9C9;
-    padding-top: 1.1rem;
+    border-top: 1px solid #E4E9F1;
+    padding-top: 1.35rem;
   }
-  .name {
-    font-family: "Archivo", sans-serif;
-    font-weight: 600;
-    font-size: 1.375rem;
-    letter-spacing: -0.015em;
+  .tags { display: flex; gap: .5rem; }
+  .tags span {
+    font-family: "JetBrains Mono", monospace;
+    font-size: .8125rem;
+    color: #47536B;
+    background: #F2F5FA;
+    border-radius: .4rem;
+    padding: .38rem .6rem;
   }
-  .sectors {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 0.8125rem;
-    letter-spacing: 0.1em;
+  .place {
+    font-family: "JetBrains Mono", monospace;
+    font-size: .8125rem;
+    letter-spacing: .1em;
     text-transform: uppercase;
-    color: #5F6B65;
+    color: #6B7890;
   }
 </style>
 </head>
 <body>
-  <div class="rail">
-    <span>Manila</span>
-    <span class="ph">PH</span>
+  <div class="top">
+    <span class="mark">
+      <svg viewBox="0 0 32 32" width="26" height="26" fill="none" aria-hidden="true">
+        <path d="M9 8.5v15h5.6M20.4 23.5v-15l3.6 5.4" stroke="#fff" stroke-width="2.8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span class="brand">LMI Automata Labs</span>
   </div>
 
-  <div class="body">
-    <p class="eyebrow">Software studio &middot; Metro Manila</p>
-
+  <div class="mid">
     <h1>Software your business can actually run&nbsp;<em>on</em>.</h1>
+  </div>
 
-    <div class="foot">
-      <span class="name">LMI Automata Labs</span>
-      <span class="sectors">Point of sale &middot; Payroll &middot; Client portals</span>
+  <div class="bottom">
+    <div class="tags">
+      <span>Point of sale</span>
+      <span>Payroll</span>
+      <span>Client portals</span>
+      <span>Integrations</span>
     </div>
+    <span class="place">Metro Manila &middot; PH</span>
   </div>
 </body>
 </html>

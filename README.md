@@ -2,7 +2,7 @@
 
 The marketing site for **LMI Automata Labs** — a Manila software studio.
 
-Live at <https://engrlaw0509.github.io/>.
+Live at <https://lmiautomatalabs.com>.
 
 Built with [Astro](https://astro.build). Pushing to `main` builds and deploys it via
 GitHub Actions; there is nothing to run by hand.
@@ -125,15 +125,54 @@ large-text exemption.
 
 ---
 
-## Custom domain
+## Domain
 
-Add `public/CNAME` containing just the domain, then point DNS at GitHub:
+`lmiautomatalabs.com`, registered at Namecheap. Two things bind it:
 
+- `public/CNAME` — GitHub Pages reads this from the built site root and sets the custom
+  domain from it. Delete it and the site falls back to `engrlaw0509.github.io`.
+- `site` in [`astro.config.mjs`](astro.config.mjs) — canonical URLs, the sitemap, and
+  every absolute `og:image` are baked at build time from this. A stale value here points
+  social previews at the wrong host while the site itself looks fine, so change both
+  together.
+
+### DNS at Namecheap
+
+Domain List → **Manage** → **Advanced DNS**. Nameservers must be **Namecheap BasicDNS**
+or Advanced DNS is ignored. Delete the default `CNAME` on `www` pointing at
+`parkingpage.namecheap.com` and any `URL Redirect` record first — they silently win over
+what you add.
+
+| Type | Host | Value | TTL |
+|---|---|---|---|
+| A | `@` | `185.199.108.153` | Automatic |
+| A | `@` | `185.199.109.153` | Automatic |
+| A | `@` | `185.199.110.153` | Automatic |
+| A | `@` | `185.199.111.153` | Automatic |
+| CNAME | `www` | `engrlaw0509.github.io.` | Automatic |
+
+All four A records are required — they are GitHub's four edge addresses, not
+alternatives. Namecheap writes `@` as the apex; do not type the domain name in the Host
+field. The trailing dot on the CNAME value matters.
+
+Optional IPv6, same `@` host as AAAA records: `2606:50c0:8000::153`,
+`2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`.
+
+Propagation is usually minutes, up to 24 hours. Check with:
+
+```bash
+nslookup lmiautomatalabs.com
 ```
-lmiautomata.com
-```
 
-Apex domain: four `A` records — `185.199.108.153`, `185.199.109.153`, `185.199.110.153`,
-`185.199.111.153`. For `www`, a `CNAME` to `engrlaw0509.github.io`. Then set `site` in
-[`astro.config.mjs`](astro.config.mjs) to the new address so canonical URLs and the
-sitemap follow, and turn on **Enforce HTTPS** in Settings → Pages.
+Once it resolves to those addresses, GitHub issues a Let's Encrypt certificate
+automatically, and **Enforce HTTPS** becomes tickable in Settings → Pages. It stays
+greyed out until the certificate is issued, which is normal.
+
+### After the domain goes live
+
+Facebook and LinkedIn cache link previews hard. Force a re-fetch once, or old shares
+keep showing nothing:
+
+- Facebook — [Sharing Debugger](https://developers.facebook.com/tools/debug/), paste the
+  URL, **Scrape Again**
+- LinkedIn — [Post Inspector](https://www.linkedin.com/post-inspector/)

@@ -32,6 +32,13 @@ const projects = defineCollection({
       /** Lower sorts first on /work/. Featured projects lead the homepage. */
       order: z.number().default(99),
       featured: z.boolean().default(false),
+      /**
+       * Use this project's cover as the big screenshot in the homepage hero.
+       * Set it on exactly one project, and pick one whose cover is an actual
+       * product UI — a marketing page there makes the studio look like a web
+       * shop. If none is set, the hero runs without a screenshot.
+       */
+      hero: z.boolean().default(false),
 
       /** The situation before. Plain language, no jargon. */
       problem: z.string(),

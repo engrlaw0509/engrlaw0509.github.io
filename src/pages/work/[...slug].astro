@@ -31,78 +31,83 @@ const ogImage = d.cover
 ---
 
 <Base title={d.name} description={d.summary} ogImage={ogImage}>
-  <!-- ============ HEADER ============ -->
   <article>
-    <section class="sheet head">
-      <div class="row">
-        <div class="margin" aria-hidden="true">{d.sector}</div>
-        <div class="head-body">
-          <p class="crumb"><a href="/work/">Work</a> <span aria-hidden="true">/</span> {d.name}</p>
-          <div class="head-title">
-            <h1 class="page-title">{d.name}</h1>
-            <span class:list={['status', live && 'is-live']}>
-              {live ? 'In production' : 'In development'}
-            </span>
-          </div>
-          <p class="lede">{d.summary}</p>
+    <!-- ============ HEADER ============ -->
+    <section class="page-head">
+      <div class="wrap head-inner">
+        <p class="crumb">
+          <a href="/work/">Work</a>
+          <span aria-hidden="true">/</span>
+          <span>{d.name}</span>
+        </p>
+        <div class="title-row">
+          <h1 class="h-xl">{d.name}</h1>
+          <span class:list={['status', live && 'is-live']}>
+            {live ? 'In production' : 'In development'}
+          </span>
         </div>
+        <p class="sector">{d.sector}</p>
+        <p class="lede">{d.summary}</p>
       </div>
     </section>
 
     {d.cover && (
-      <section class="sheet cover-wrap">
-        <div class="shot">
+      <section class="wrap shot-hero">
+        <div class="frame frame-lg">
+          <div class="frame-bar" aria-hidden="true"><span></span><span></span><span></span></div>
           <Image
             src={d.cover}
             alt={`${d.name} — main screen`}
-            widths={[640, 1024, 1440, 1920]}
-            sizes="(min-width: 78rem) 68rem, 94vw"
+            widths={[760, 1160, 1600]}
+            sizes="(min-width: 78rem) 70rem, 94vw"
             loading="eager"
           />
         </div>
       </section>
     )}
 
-    <!-- ============ PROBLEM / OUTCOME ============ -->
-    <section class="sheet block">
-      <hr class="rule" />
-      <div class="row block-inner">
-        <div class="margin" aria-hidden="true">The story</div>
+    {d.highlights.length > 0 && (
+      <section class="wrap band">
+        <div class="metrics">
+          {d.highlights.map((h) => (
+            <div>
+              <span class="metric-n">{h.value}</span>
+              <span class="metric-l">{h.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- ============ BEFORE / AFTER ============ -->
+    <section class="section">
+      <div class="wrap">
         <div class="story">
-          <div class="story-part">
-            <h2 class="story-h">Before</h2>
-            <p class="story-p">{d.problem}</p>
+          <div class="card-surface story-part">
+            <span class="story-tag">Before</span>
+            <p class="muted">{d.problem}</p>
           </div>
-          <div class="story-part">
-            <h2 class="story-h">After</h2>
-            <p class="story-p is-outcome">{d.outcome}</p>
+          <div class="card-surface story-part is-after">
+            <span class="story-tag is-good">After</span>
+            <p class="story-outcome">{d.outcome}</p>
           </div>
         </div>
-
-        {d.highlights.length > 0 && (
-          <div class="figures highlights">
-            {d.highlights.map((h) => (
-              <div>
-                <span class="n">{h.value}</span>
-                <span class="l">{h.label}</span>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
     </section>
 
     <!-- ============ WHAT IT DOES ============ -->
     {d.features.length > 0 && (
-      <section class="sheet block">
-        <hr class="rule" />
-        <div class="row block-inner">
-          <div class="margin" aria-hidden="true">What it does</div>
-          <div class="feat">
+      <section class="section section-tint">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">What it does</p>
+            <h2 class="h-lg">The parts that matter to the owner</h2>
+          </div>
+          <div class="feat-grid">
             {d.features.map((f) => (
-              <div class="feat-item">
-                <h3 class="feat-title">{f.title}</h3>
-                <p class="feat-body">{f.body}</p>
+              <div class="card-surface feat">
+                <h3 class="h-md feat-title">{f.title}</h3>
+                <p class="muted">{f.body}</p>
               </div>
             ))}
           </div>
@@ -112,19 +117,24 @@ const ogImage = d.cover
 
     <!-- ============ GALLERY ============ -->
     {d.gallery.length > 0 && (
-      <section class="sheet block">
-        <hr class="rule" />
-        <div class="row block-inner">
-          <div class="margin" aria-hidden="true">Screens</div>
+      <section class="section">
+        <div class="wrap">
+          <div class="section-head">
+            <p class="eyebrow">Screens</p>
+            <h2 class="h-lg">A look inside</h2>
+          </div>
           <div class="gallery">
             {d.gallery.map((shot, i) => (
               <figure class="gal-item">
-                <div class="shot">
+                <div class="frame">
+                  <div class="frame-bar" aria-hidden="true">
+                    <span></span><span></span><span></span>
+                  </div>
                   <Image
                     src={shot.src}
                     alt={shot.alt}
                     widths={[640, 1024, 1440]}
-                    sizes="(min-width: 62rem) 52rem, 94vw"
+                    sizes="(min-width: 62rem) 54rem, 94vw"
                     loading={i === 0 ? 'eager' : 'lazy'}
                   />
                 </div>
@@ -136,36 +146,28 @@ const ogImage = d.cover
       </section>
     )}
 
-    <!-- ============ FREE PROSE (optional, from the .md body) ============ -->
-    <section class="sheet block">
-      <hr class="rule" />
-      <div class="row block-inner">
-        <div class="margin" aria-hidden="true">Detail</div>
-        <div>
-          <div class="prose"><Content /></div>
-          {d.stack.length > 0 && (
-            <div class="built">
-              <h3 class="built-h">Built with</h3>
-              <ul class="stack">{d.stack.map((s) => <li>{s}</li>)}</ul>
-            </div>
-          )}
-        </div>
+    <!-- ============ DETAIL + STACK ============ -->
+    <section class="section section-tint">
+      <div class="wrap detail">
+        <div class="prose"><Content /></div>
+        {d.stack.length > 0 && (
+          <aside class="card-surface built">
+            <span class="built-h">Built with</span>
+            <ul class="tags">{d.stack.map((s) => <li>{s}</li>)}</ul>
+          </aside>
+        )}
       </div>
     </section>
 
     <!-- ============ NEXT ============ -->
-    <section class="sheet block">
-      <hr class="rule" />
-      <div class="row block-inner">
-        <div class="margin" aria-hidden="true">Next</div>
+    <section class="section">
+      <div class="wrap">
         <div class="cta">
-          <h2 class="section-title">Could your business use something like this?</h2>
-          <div class="cta-row">
+          <h2 class="h-lg">Could your business use something like this?</h2>
+          <div class="btn-row">
             <a class="btn" href="/contact/">Start a conversation</a>
             {next.id !== project.id && (
-              <a class="btn btn-ghost" href={`/work/${next.id}/`}>
-                Next: {next.data.name}
-              </a>
+              <a class="btn btn-ghost" href={`/work/${next.id}/`}>Next: {next.data.name}</a>
             )}
           </div>
         </div>
@@ -175,75 +177,105 @@ const ogImage = d.cover
 </Base>
 
 <style>
-  .head { padding-block: clamp(2rem, 5vw, 3.25rem) clamp(1.5rem, 3vw, 2.25rem); }
-  .head-body { display: grid; gap: 1rem; }
+  .page-head { padding-block: clamp(2rem, 5vw, 3.5rem) 0; }
+  .head-inner { display: grid; gap: 0.85rem; }
   .crumb {
     font-family: var(--f-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--ink-3);
+    display: flex;
+    gap: 0.5rem;
+  }
+  .crumb a { color: var(--ink-3); text-decoration: none; }
+  .crumb a:hover { color: var(--accent); }
+  .title-row { display: flex; align-items: center; gap: 0.9rem; flex-wrap: wrap; }
+  .sector {
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .shot-hero { margin-top: clamp(1.75rem, 3.5vw, 2.5rem); }
+  .band { padding-top: clamp(1.75rem, 3.5vw, 2.5rem); }
+
+  /* ---------------- before / after ---------------- */
+  .story { display: grid; gap: 1.25rem; }
+  @media (min-width: 48rem) { .story { grid-template-columns: 1fr 1fr; } }
+  .story-part { display: grid; gap: 0.7rem; align-content: start; }
+  .story-part.is-after {
+    border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+    background:
+      radial-gradient(130% 100% at 0% 0%, var(--accent-wash), transparent 65%),
+      var(--surface);
+  }
+  .story-tag {
+    font-family: var(--f-mono);
     font-size: 0.6875rem;
+    font-weight: 500;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-3);
   }
-  .crumb a { color: var(--ink-3); text-decoration: none; }
-  .crumb a:hover { color: var(--accent); }
-  .head-title { display: flex; align-items: baseline; gap: 0.9rem; flex-wrap: wrap; }
-  .page-title {
-    font-weight: 800;
-    font-size: clamp(2.2rem, 1.2rem + 4vw, 3.75rem);
-    line-height: 1;
-    letter-spacing: -0.032em;
-  }
-
-  .cover-wrap { padding-block: 0 clamp(1rem, 2vw, 1.5rem); }
-
-  .block { padding-block: 0 clamp(2.5rem, 5vw, 3.75rem); }
-  .block-inner { padding-top: clamp(2.25rem, 4.5vw, 3.25rem); }
-
-  .story { display: grid; gap: clamp(1.75rem, 3.5vw, 2.5rem); }
-  @media (min-width: 48rem) { .story { grid-template-columns: 1fr 1fr; } }
-  .story-part { display: grid; gap: 0.55rem; align-content: start; }
-  .story-h {
-    font-family: var(--f-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-3);
-  }
-  .story-p { color: var(--ink-2); }
-  .story-p.is-outcome {
+  .story-tag.is-good { color: var(--accent); }
+  .story-outcome {
     color: var(--ink);
     font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+    line-height: 1.6;
   }
-  .highlights { margin-top: clamp(2rem, 4vw, 2.75rem); }
 
-  .feat { display: grid; gap: 0; }
-  .feat-item { padding-block: 1.5rem; border-top: 1px solid var(--rule-soft); display: grid; gap: 0.4rem; }
-  .feat-item:first-child { border-top: 0; padding-top: 0; }
-  .feat-title { font-weight: 700; font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
-  .feat-body { color: var(--ink-2); max-width: var(--measure); }
+  /* ---------------- features ---------------- */
+  .feat-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  }
+  .feat { display: grid; gap: 0.5rem; align-content: start; }
+  .feat-title { font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem); }
 
+  /* ---------------- gallery ---------------- */
   .gallery { display: grid; gap: clamp(2rem, 4vw, 3rem); }
-  .gal-item { margin: 0; display: grid; gap: 0.7rem; }
-  .gal-cap { font-size: 0.9375rem; color: var(--ink-3); max-width: 60ch; }
+  .gal-item { margin: 0; display: grid; gap: 0.8rem; }
+  .gal-cap { font-size: 0.9375rem; color: var(--ink-2); max-width: 64ch; }
 
-  .prose { color: var(--ink-2); display: grid; gap: 1rem; max-width: var(--measure); }
+  /* ---------------- detail ---------------- */
+  .detail { display: grid; gap: 2rem; align-items: start; }
+  @media (min-width: 62rem) { .detail { grid-template-columns: minmax(0, 1fr) 17rem; gap: 3rem; } }
+  .prose { color: var(--ink-2); display: grid; gap: 1.1rem; max-width: var(--measure); }
   .prose :global(p) { margin: 0; }
-  .prose :global(h2),
-  .prose :global(h3) { color: var(--ink); font-weight: 700; font-size: 1.125rem; margin-top: 0.5rem; }
-  .prose :global(ul) { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.35rem; }
+  .prose :global(h2), .prose :global(h3) {
+    color: var(--ink);
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 1.1875rem;
+    margin-top: 0.5rem;
+  }
+  .prose :global(ul) { margin: 0; padding-left: 1.15rem; display: grid; gap: 0.4rem; }
   .prose :global(strong) { color: var(--ink); font-weight: 600; }
 
-  .built { margin-top: clamp(2rem, 4vw, 2.5rem); display: grid; gap: 0.7rem; }
+  .built { display: grid; gap: 0.8rem; align-content: start; }
   .built-h {
     font-family: var(--f-mono);
     font-size: 0.6875rem;
     font-weight: 500;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--ink-3);
   }
 
-  .cta { display: grid; gap: 1.1rem; justify-items: start; }
-  .cta-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+  /* ---------------- cta ---------------- */
+  .cta {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 1.25rem;
+    padding: clamp(2.5rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3rem);
+    background:
+      radial-gradient(90% 120% at 50% 0%, var(--accent-wash), transparent 70%),
+      var(--bg-tint);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+  }
 </style>

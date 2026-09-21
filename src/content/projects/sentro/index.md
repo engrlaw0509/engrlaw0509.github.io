@@ -4,6 +4,7 @@ sector: Insurance & financial advice
 status: production
 order: 2
 featured: true
+hero: true
 
 summary: >-
   One place for a financial advisor's whole practice — every client, every policy, every
