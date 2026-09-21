@@ -69,7 +69,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <header class="masthead">
     <div class="wrap masthead-inner">
       <a class="brand" href="/">
-        <img class="brand-mark" src="/brand/mark-180.png" width="36" height="36" alt="" />
+        <img class="brand-mark" src="/brand/mark-wide.png" height="34" alt="" />
         <span class="brand-name">LMI Automata Labs</span>
       </a>
 
@@ -92,7 +92,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     <div class="wrap footer-inner">
       <div class="footer-brand">
         <span class="footer-name">
-          <img src="/brand/mark-180.png" width="28" height="28" alt="" />
+          <img src="/brand/mark-wide.png" height="26" alt="" />
           LMI Automata Labs
         </span>
         <p class="footer-note">
@@ -156,11 +156,12 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
       letter-spacing: -0.02em;
     }
     .brand-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 9px;
+      height: 34px;
+      width: auto;
+      border-radius: 8px;
       /* The mark is supplied on white, so give it a deliberate light chip
-         rather than letting it sit as a white box on the dark theme. */
+         rather than letting it sit as a white box on the dark theme. The
+         asset already carries its own clear space, so no padding here. */
       background: #FFFFFF;
       border: 1px solid var(--line);
       flex: none;
@@ -210,9 +211,9 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
       gap: 0.55rem;
     }
     .footer-name img {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
+      height: 26px;
+      width: auto;
+      border-radius: 6px;
       background: #FFFFFF;
       border: 1px solid var(--line);
       flex: none;
