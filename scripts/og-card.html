@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!--
+  Source for public/og.png — the image that appears when the site is shared
+  on Facebook, LinkedIn, Messenger or Viber.
+
+  Rendered at exactly 1200x630 (the size every platform crops to) by:
+      node scripts/og.mjs
+
+  Deliberately light: most social feeds are white or near-black, and the pale
+  ledger ground with heavy black type reads as neither.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400&display=swap">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 630px; }
+  body {
+    background: #EDF1E9;
+    color: #131A15;
+    font-family: "Source Serif 4", Georgia, serif;
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    align-content: stretch;
+    padding: 4rem 4.5rem;
+    gap: 0 3rem;
+  }
+
+  /* the ledger margin */
+  .rail {
+    border-right: 1px solid #D0D9C9;
+    padding-right: 1.5rem;
+    text-align: right;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #5F6B65;
+    display: grid;
+    align-content: space-between;
+  }
+  .rail span { display: block; }
+  .rail .ph { color: #17439E; }
+
+  .body { display: grid; align-content: space-between; }
+
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #17439E;
+  }
+
+  h1 {
+    font-family: "Archivo", sans-serif;
+    font-weight: 800;
+    font-size: 4.75rem;
+    line-height: 0.97;
+    letter-spacing: -0.032em;
+    max-width: 21ch;
+  }
+  h1 em { font-style: normal; color: #17439E; }
+
+  .foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 2rem;
+    border-top: 1px solid #D0D9C9;
+    padding-top: 1.1rem;
+  }
+  .name {
+    font-family: "Archivo", sans-serif;
+    font-weight: 600;
+    font-size: 1.375rem;
+    letter-spacing: -0.015em;
+  }
+  .sectors {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8125rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #5F6B65;
+  }
+</style>
+</head>
+<body>
+  <div class="rail">
+    <span>Manila</span>
+    <span class="ph">PH</span>
+  </div>
+
+  <div class="body">
+    <p class="eyebrow">Software studio &middot; Metro Manila</p>
+
+    <h1>Software your business can actually run&nbsp;<em>on</em>.</h1>
+
+    <div class="foot">
+      <span class="name">LMI Automata Labs</span>
+      <span class="sectors">Point of sale &middot; Payroll &middot; Client portals</span>
+    </div>
+  </div>
+</body>
+</html>

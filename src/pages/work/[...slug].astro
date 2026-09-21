@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 
 export async function getStaticPaths() {
@@ -21,9 +21,16 @@ const { project, next } = Astro.props;
 const d = project.data;
 const live = d.status === 'production';
 const { Content } = await render(project);
+
+// Share this project's own screenshot rather than the studio card, cropped to
+// the 1200x630 every platform expects. Projects without a cover fall back to
+// the branded card in Base.
+const ogImage = d.cover
+  ? (await getImage({ src: d.cover, width: 1200, height: 630, fit: 'cover', format: 'png' })).src
+  : undefined;
 ---
 
-<Base title={d.name} description={d.summary}>
+<Base title={d.name} description={d.summary} ogImage={ogImage}>
   <!-- ============ HEADER ============ -->
   <article>
     <section class="sheet head">

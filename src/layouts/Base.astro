@@ -6,11 +6,19 @@ interface Props {
   description: string;
   /** Page name for <title>; the studio name is appended. */
   bare?: boolean;
+  /**
+   * Site-root-relative path to the image shown when this page is shared on
+   * Facebook, LinkedIn, Messenger or Viber. Project pages pass their own
+   * screenshot; everything else gets the branded card.
+   */
+  ogImage?: string;
 }
 
-const { title, description, bare = false } = Astro.props;
+const { title, description, bare = false, ogImage = '/og.png' } = Astro.props;
 const fullTitle = bare ? title : `${title} — LMI Automata Labs`;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
+// Social crawlers do not resolve relative image paths — this must be absolute.
+const ogImageUrl = new URL(ogImage, Astro.site).href;
 const path = Astro.url.pathname;
 
 const nav = [
@@ -38,7 +46,13 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
   <meta property="og:title" content={fullTitle} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={description} />
+  <meta property="og:locale" content="en_PH" />
   <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content={ogImageUrl} />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
