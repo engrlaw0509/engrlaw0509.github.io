@@ -8,18 +8,21 @@
    ------------------------------------------------------------------ */
 :root {
   --bg:          #FFFFFF;
-  --bg-tint:     #F7F9FC;   /* alternating section wash */
+  --bg-tint:     #F4F8FB;   /* alternating section wash */
   --surface:     #FFFFFF;   /* cards */
-  --surface-2:   #F2F5FA;   /* chips, frame bars */
-  --ink:         #0B1220;
-  --ink-2:       #47536B;
-  --ink-3:       #6B7890;
-  --line:        #E4E9F1;
-  --line-soft:   #EFF3F8;
+  --surface-2:   #EAF2F8;   /* chips, frame bars */
+  --ink:         #0C1E33;   /* navy-tinted, tied to the logo wordmark */
+  --ink-2:       #41576F;
+  --ink-3:       #5A7288;
+  --line:        #DBE6EF;
+  --line-soft:   #E9F0F6;
 
-  --accent:      #1F5EFF;
-  --accent-ink:  #1546C4;
-  --accent-wash: rgba(31, 94, 255, 0.07);
+  /* Navy carries interaction (it has the contrast); cyan is decorative only —
+     the same division of labour as the logo. */
+  --accent:      #145C94;
+  --accent-ink:  #0E4470;
+  --cyan:        #00A3C4;
+  --accent-wash: rgba(0, 180, 216, 0.11);
   --on-accent:   #FFFFFF;
 
   --live:        #0E9F6E;
@@ -46,20 +49,21 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg:          #0A0E16;
-    --bg-tint:     #0E141F;
-    --surface:     #121927;
-    --surface-2:   #1A2232;
-    --ink:         #EAEEF6;
-    --ink-2:       #A6B1C6;
-    --ink-3:       #8592AB;
-    --line:        #222B3D;
-    --line-soft:   #1A2230;
+    --bg:          #071420;
+    --bg-tint:     #0B1C2A;
+    --surface:     #0E2434;
+    --surface-2:   #16303F;
+    --ink:         #E6F0F7;
+    --ink-2:       #A3BACC;
+    --ink-3:       #8AA4B8;
+    --line:        #1E3A4C;
+    --line-soft:   #162C3B;
 
-    --accent:      #6E9BFF;
-    --accent-ink:  #9DBAFF;
-    --accent-wash: rgba(110, 155, 255, 0.10);
-    --on-accent:   #071019;
+    --accent:      #5FB8E8;
+    --accent-ink:  #94D2F2;
+    --cyan:        #22D3EE;
+    --accent-wash: rgba(34, 211, 238, 0.12);
+    --on-accent:   #05131C;
 
     --live:        #34D39E;
     --building:    #E0A458;
@@ -70,20 +74,21 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg:          #0A0E16;
-  --bg-tint:     #0E141F;
-  --surface:     #121927;
-  --surface-2:   #1A2232;
-  --ink:         #EAEEF6;
-  --ink-2:       #A6B1C6;
-  --ink-3:       #8592AB;
-  --line:        #222B3D;
-  --line-soft:   #1A2230;
+  --bg:          #071420;
+  --bg-tint:     #0B1C2A;
+  --surface:     #0E2434;
+  --surface-2:   #16303F;
+  --ink:         #E6F0F7;
+  --ink-2:       #A3BACC;
+  --ink-3:       #8AA4B8;
+  --line:        #1E3A4C;
+  --line-soft:   #162C3B;
 
-  --accent:      #6E9BFF;
-  --accent-ink:  #9DBAFF;
-  --accent-wash: rgba(110, 155, 255, 0.10);
-  --on-accent:   #071019;
+  --accent:      #5FB8E8;
+  --accent-ink:  #94D2F2;
+  --cyan:        #22D3EE;
+  --accent-wash: rgba(34, 211, 238, 0.12);
+  --on-accent:   #05131C;
 
   --live:        #34D39E;
   --building:    #E0A458;
