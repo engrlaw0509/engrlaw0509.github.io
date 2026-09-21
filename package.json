@@ -8,12 +8,14 @@
     "preview": "astro preview",
     "check": "astro check",
     "og": "node scripts/og.mjs",
-    "logo": "node scripts/logo.mjs"
+    "logo": "node scripts/logo.mjs",
+    "start": "sirv dist --host 0.0.0.0 --port ${PORT:-4321} --etag --gzip --brotli --no-clear"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^5.14.1",
-    "sharp": "^0.34.4"
+    "sharp": "^0.34.4",
+    "sirv-cli": "^3.0.1"
   },
   "devDependencies": {
     "puppeteer-core": "^25.9.0"
