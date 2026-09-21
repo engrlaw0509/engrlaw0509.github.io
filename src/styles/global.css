@@ -195,23 +195,41 @@ p { margin: 0; }
   color: var(--on-accent);
   text-decoration: none;
   box-shadow: var(--shadow-sm);
-  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+  transition:
+    background-color 170ms cubic-bezier(.2, .6, .2, 1),
+    border-color 170ms cubic-bezier(.2, .6, .2, 1),
+    box-shadow 170ms cubic-bezier(.2, .6, .2, 1),
+    transform 110ms cubic-bezier(.2, .6, .2, 1);
 }
 .btn:hover {
   background: var(--accent-ink);
   border-color: var(--accent-ink);
   color: var(--on-accent);
   transform: translateY(-1px);
+  box-shadow: var(--shadow);
 }
+/* A real press, so a tap feels like it registered. */
+.btn:active { transform: translateY(0) scale(0.985); box-shadow: var(--shadow-sm); }
 .btn-ghost {
   background: var(--surface);
   color: var(--ink);
   border-color: var(--line);
 }
 .btn-ghost:hover { background: var(--surface); color: var(--accent); border-color: var(--accent); }
-@media (prefers-reduced-motion: reduce) { .btn:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .btn:hover, .btn:active { transform: none; }
+}
 
 .btn-row { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+/* Once buttons stop fitting side by side, stack them full width rather than
+   letting them wrap to different widths and centre independently — that is what
+   made the edges look ragged on a phone. */
+@media (max-width: 30rem) {
+  .btn-row { flex-direction: column; align-items: stretch; }
+  .btn-row .btn,
+  .submit .btn { width: 100%; justify-content: center; }
+}
 
 /* ---------------- status pill ---------------- */
 .status {

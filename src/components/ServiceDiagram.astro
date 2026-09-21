@@ -133,20 +133,36 @@ const services = [
   }
 
   /* ---------------- tabs ---------------- */
-  .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  /* Four pills do not fit one phone row, and letting them wrap freely left a
+     ragged right edge. An even two-column grid below 40rem keeps every row
+     flush; above that they go back to natural-width pills. */
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  @media (min-width: 40rem) {
+    .tabs { display: flex; flex-wrap: wrap; }
+  }
   .tab {
     cursor: pointer;
     user-select: none;
+    text-align: center;
     font-weight: 600;
     font-size: 0.9375rem;
-    padding: 0.55rem 1.05rem;
+    padding: 0.6rem 1.05rem;
     border-radius: var(--r-pill);
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--ink-2);
-    transition: border-color 140ms ease, color 140ms ease, background-color 140ms ease;
+    transition:
+      border-color 170ms cubic-bezier(.2, .6, .2, 1),
+      color 170ms cubic-bezier(.2, .6, .2, 1),
+      background-color 170ms cubic-bezier(.2, .6, .2, 1),
+      transform 110ms cubic-bezier(.2, .6, .2, 1);
   }
   .tab:hover { color: var(--ink); border-color: var(--ink-3); }
+  .tab:active { transform: scale(0.97); }
 
   /* ---------------- views ---------------- */
   .view { display: none; }
@@ -167,6 +183,22 @@ const services = [
   #svc-custom:checked      ~ .views .view-custom {
     display: grid;
     gap: 1.5rem;
+    /* `display` cannot be transitioned, so the incoming panel animates instead.
+       Deliberately no fill-mode: if the animation never runs the panel is simply
+       visible, rather than stuck at opacity 0. */
+    animation: view-in 300ms cubic-bezier(.2, .6, .2, 1);
+  }
+
+  @keyframes view-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #svc-integration:checked ~ .views .view-integration,
+    #svc-automation:checked  ~ .views .view-automation,
+    #svc-migration:checked   ~ .views .view-migration,
+    #svc-custom:checked      ~ .views .view-custom { animation: none; }
+    .tab:active { transform: none; }
   }
   /* Visible focus ring on the active tab when driven by keyboard. */
   .picker:focus-visible ~ .tabs .tab[for] { outline: none; }

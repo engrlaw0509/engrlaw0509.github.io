@@ -182,6 +182,13 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
     .masthead-cta { padding: 0.55rem 1rem; font-size: 0.875rem; }
     @media (max-width: 26rem) { .masthead-cta { display: none; } }
 
+    /* The header has to wrap on a phone. Spread the links across the full row
+       so it reads as a deliberate nav bar instead of an accidental overflow. */
+    @media (max-width: 34rem) {
+      .masthead-inner { gap: 0.6rem; padding-block: 0.7rem; }
+      .masthead-nav { width: 100%; justify-content: space-between; gap: 0.5rem; }
+    }
+
     /* ---------------- footer ---------------- */
     .footer {
       border-top: 1px solid var(--line);
