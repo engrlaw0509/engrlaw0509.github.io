@@ -4,17 +4,20 @@ import Base from '../layouts/Base.astro';
 const email = 'lmiautomatalabs@gmail.com';
 
 /**
- * Where enquiries go. Paste the /exec URL of the Apps Script web app in
- * scripts/enquiry-endpoint.gs — that file has the deploy steps. The data then
- * lands in a Google Sheet you own and emails you, with no third-party service.
+ * Enquiries are emailed straight to `email` below by FormSubmit, which needs no
+ * account and no deployment — the address is the endpoint. The very first
+ * submission triggers a one-time activation link sent to that inbox; click it
+ * once and every submission after arrives directly.
  *
- * While this is empty the form still works: it composes a filled-in email in
- * the visitor's mail client instead. That is honest but lossy — it asks the
- * visitor to send the mail themselves, and some will not bother. Setting this
- * is the difference between an enquiry arriving and an enquiry being abandoned.
+ * Trade-off worth knowing: submissions pass through formsubmit.co on the way.
+ * That is fine for business enquiries and nothing sensitive is collected, but if
+ * you would rather nothing left your own Google account, deploy
+ * scripts/enquiry-endpoint.gs instead and put its /exec URL in ENDPOINT_OVERRIDE
+ * — the form and its script work with either.
  */
-const ENQUIRY_ENDPOINT = '';
-const hasEndpoint = ENQUIRY_ENDPOINT.length > 0;
+const ENDPOINT_OVERRIDE = '';
+const ACTION = ENDPOINT_OVERRIDE || `https://formsubmit.co/${email}`;
+const AJAX = ENDPOINT_OVERRIDE || `https://formsubmit.co/ajax/${email}`;
 
 const sizes = ['Just me', '2–10 people', '11–50 people', 'More than 50'];
 const sectors = [
@@ -61,15 +64,13 @@ const needs = [
 
   <section class="section">
     <div class="wrap layout">
-      <form
-        class="form card-surface"
-        method={hasEndpoint ? 'POST' : undefined}
-        action={hasEndpoint ? ENQUIRY_ENDPOINT : undefined}
-        data-endpoint={hasEndpoint ? ENQUIRY_ENDPOINT : undefined}
-        data-mailto={hasEndpoint ? undefined : email}
-      >
-        {/* Honeypot — bots fill it, people never see it. */}
-        <input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" aria-hidden="true" />
+      <form class="form card-surface" method="POST" action={ACTION} data-ajax={AJAX}>
+        {/* FormSubmit settings. _honey is its built-in honeypot: bots fill it,
+            people never see it, and it is discarded server-side. */}
+        <input type="hidden" name="_subject" value="New enquiry from lmiautomatalabs.com" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="text" name="_honey" class="botcheck" tabindex="-1" aria-hidden="true" autocomplete="off" />
 
         <!-- ---------- who ---------- -->
         <fieldset class="group">
@@ -214,106 +215,62 @@ const needs = [
     </div>
   </section>
 
-  {hasEndpoint && (
-    <script is:inline>
-      // The form is a real POST and works with this script blocked — the browser
-      // just navigates to the endpoint's thank-you page. With the script running
-      // we submit in the background and report inline instead.
-      //
-      // Posted as text/plain on purpose: that is a "simple" request, so the
-      // browser skips the CORS preflight that Apps Script cannot answer. If the
-      // fetch is blocked anyway we fall back to a native submit, which always
-      // works — so a failure never silently swallows an enquiry.
-      (function () {
-        var form = document.querySelector('form[data-endpoint]');
-        if (!form) return;
-        var status = form.querySelector('.status');
-        var button = form.querySelector('button[type=submit]');
+  <script is:inline>
+    // The form is a real POST and works with this script blocked — the browser
+    // just navigates to FormSubmit's own thank-you page. With the script running
+    // we submit in the background and report inline instead.
+    //
+    // If the request cannot be confirmed we hand over to a native submit rather
+    // than claiming success. A form that says "sent" when nothing sent is worse
+    // than a page reload.
+    (function () {
+      var form = document.querySelector('form[data-ajax]');
+      if (!form) return;
+      var status = form.querySelector('.status');
+      var button = form.querySelector('button[type=submit]');
 
-        function say(msg, bad) {
-          if (!status) return;
-          status.hidden = false;
-          status.textContent = msg;
-          status.classList.toggle('is-bad', !!bad);
-        }
+      function say(msg, bad) {
+        if (!status) return;
+        status.hidden = false;
+        status.textContent = msg;
+        status.classList.toggle('is-bad', !!bad);
+      }
 
-        form.addEventListener('submit', function (e) {
-          if (!form.reportValidity()) return;
-          e.preventDefault();
-
-          var d = new FormData(form);
-          var payload = {};
-          d.forEach(function (v, k) {
-            if (payload[k] === undefined) payload[k] = v;
-            else if (Array.isArray(payload[k])) payload[k].push(v);
-            else payload[k] = [payload[k], v];
-          });
-
-          button.disabled = true;
-          say('Sending…');
-
-          fetch(form.dataset.endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload),
-          })
-            .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
-            .then(function (res) {
-              if (!res.ok) throw new Error(res.message || 'rejected');
-              form.reset();
-              button.disabled = false;
-              say('Thanks — that reached us. We usually reply the same day.');
-            })
-            .catch(function () {
-              // Could not confirm it. Rather than claim success, hand it to the
-              // browser's own submit, which posts and navigates for real.
-              form.removeAttribute('data-endpoint');
-              form.submit();
-            });
-        });
-      })();
-    </script>
-  )}
-
-  {!hasEndpoint && (
-    <script is:inline>
-      // No form endpoint configured yet, so compose a filled-in email instead of
-      // posting into the void. Set WEB3FORMS_KEY in src/pages/contact.astro to
-      // switch this to a real submission.
-      document.querySelector('form[data-mailto]')?.addEventListener('submit', (e) => {
+      form.addEventListener('submit', function (e) {
+        if (!form.reportValidity()) return;
         e.preventDefault();
-        const f = e.target;
-        if (!f.reportValidity()) return;
-        const d = new FormData(f);
-        const many = (k) => d.getAll(k).filter(Boolean).join(', ') || '—';
-        const one = (k) => (d.get(k) || '').toString().trim() || '—';
 
-        const body = [
-          `Name:      ${one('name')}`,
-          `Business:  ${one('business')}`,
-          `Email:     ${one('email')}`,
-          `Phone:     ${one('phone')}`,
-          `Sector:    ${one('sector')}`,
-          `Size:      ${one('size')}`,
-          '',
-          `Runs on today: ${many('runs_on')}`,
-          '',
-          'The job that takes too long:',
-          one('current_process'),
-          '',
-          `Looking for: ${many('needs')}`,
-          '',
-          'What good would look like:',
-          one('outcome'),
-        ].join('\n');
+        var payload = {};
+        new FormData(form).forEach(function (v, k) {
+          if (payload[k] === undefined) payload[k] = v;
+          else if (Array.isArray(payload[k])) payload[k].push(v);
+          else payload[k] = [payload[k], v];
+        });
 
-        window.location.href =
-          `mailto:${f.dataset.mailto}` +
-          `?subject=${encodeURIComponent('Enquiry from ' + one('business') || 'Website enquiry')}` +
-          `&body=${encodeURIComponent(body)}`;
+        button.disabled = true;
+        say('Sending…');
+
+        fetch(form.dataset.ajax, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error('rejected');
+            return r.json().catch(function () { return {}; });
+          })
+          .then(function () {
+            form.reset();
+            button.disabled = false;
+            say('Thanks — that reached us. We usually reply the same day.');
+          })
+          .catch(function () {
+            form.removeAttribute('data-ajax');
+            form.submit();
+          });
       });
-    </script>
-  )}
+    })();
+  </script>
 </Base>
 
 <style>
