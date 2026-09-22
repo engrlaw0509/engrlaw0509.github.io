@@ -93,7 +93,7 @@ capture a new app.
 |---|---|---|
 | Sentro | 4, captured | Its dev seed builds a synthetic book of business — every contact is marked `Demo` with an `@example.ph` address. Safe to publish. |
 | EA Builders | 4, captured | Only via the built-in mock adapter — see the warning below. |
-| Croma MNL | Public site only | The POS is an Apps Script app behind a Google login, so its screens have to come from a signed-in session. |
+| Croma MNL | 2 — supplied by hand | The operations dashboard came from a signed-in session (it is an Apps Script app behind a Google login, so `capture.mjs` cannot reach it). **Note: it shows real revenue figures, not seed data** — unlike every other shot on the site. |
 | Kaha | None | Its API needs a real Postgres and has no mock mode. The `kaha` entry in `capture.mjs` has the commands; uncomment its shots once a database is up. |
 
 ### EA Builders: start the dev server in demo mode

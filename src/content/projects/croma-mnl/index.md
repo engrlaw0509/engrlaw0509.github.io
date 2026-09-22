@@ -49,6 +49,12 @@ features:
       the people who already like you have a reason to come back more often.
 
 cover: ./cover.png
+gallery:
+  - src: ./02-site.png
+    alt: The public Croma MNL website, showing the cafe's opening hours, amenities and menu link
+    caption: >-
+      The public site people find in search — one of four connected surfaces, and the only
+      one customers ever see.
 
 stack:
   - Apps Script
