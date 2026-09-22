@@ -124,40 +124,43 @@ Replacing any image is just dropping a better file over the old one and rebuildi
 
 ## The enquiry form
 
-`/contact/` is a three-step flow: who you are, how the business runs today, what you need.
-With the page's script blocked it degrades to one plain page of the same fields and a
-single Send button that posts natively — so it works either way.
+`/contact/` is a three-step flow that posts to **this site's own server**
+([`server.mjs`](server.mjs)) at `POST /api/enquiry`, which sends through **Resend** — the
+same provider Sentro uses.
 
-It posts to **FormSubmit**, which emails `lmiautomatalabs@gmail.com`. No account, nothing
-to deploy: the address is the endpoint. Hidden fields configure it (`_subject`,
-`_template=table`, `_captcha=false`, `_honey` as the honeypot).
+That is the point: every other LMI project has a backend and sends its own mail (Sentro
+via Resend, EA Builders via its `/api/inquiry` route, Croma via Apps Script). This site was
+the only static one, so it had to borrow a third-party relay — which meant activation
+links, someone else's sending reputation, and spam folders. Now it posts same-origin: no
+CORS, no relay, no activation.
 
-### FormSubmit needs activating once
+### Required Railway variables
 
-**The first submission ever made does not arrive.** FormSubmit replies asking you to click
-an "Activate Form" link it mails to that inbox. Until that is clicked every submission is
-refused. Check spam if it is not obvious.
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY` | Sending key. **Without it the endpoint logs the enquiry and returns 503** rather than showing a success that did not happen. |
+| `ENQUIRY_FROM` | Sender, e.g. `LMI Automata Labs <enquiries@lmiautomatalabs.com>`. Must be on a domain verified in Resend. |
+| `ENQUIRY_TO` | Where enquiries land. Defaults to `lmiautomatalabs@gmail.com`. |
 
-### It answers 200 even when it refuses
+Verify `lmiautomatalabs.com` in Resend and send from it — mail then carries your own
+domain's reputation instead of a shared relay's. Resend's `onboarding@resend.dev` only
+delivers to the Resend account's own address, so it is not a substitute here.
 
-This is the trap. FormSubmit returns **HTTP 200** for a rejection and puts the real verdict
-in a `success` field, **as a string**:
+`GET /api/health` reports whether mail is configured.
 
-```json
-{"success":"false","message":"This form needs Activation. ..."}
-```
+### What the endpoint does
 
-Checking `response.ok` therefore reports success while nothing was sent — which is what
-this form did until it was caught. The handler compares `String(res.success) !== 'true'`
-and surfaces the endpoint's own message on failure, so a refusal is visible rather than
-silent.
+Honeypot (accepted silently, so a bot learns nothing), a coarse per-IP throttle keyed on
+`x-real-ip` (the header that does not rotate behind Railway's proxy), required-field
+checks, and — borrowed from EA Builders' route — **it logs the full payload whenever
+sending fails**, so a lead is never silently lost.
 
-### Changing where it goes
+The browser checks both the status code and the `ok` flag before reporting success. An
+earlier version trusted the status code alone against a relay that answers 200 on
+rejection, and told visitors their enquiry had been sent when nothing had.
 
-Change `email` at the top of [`src/pages/contact.astro`](src/pages/contact.astro) — the
-action, the AJAX URL and the page copy all derive from it. To keep enquiries inside your
-own Google account instead, deploy
-[`scripts/enquiry-endpoint.gs`](scripts/enquiry-endpoint.gs) and set `ENDPOINT_OVERRIDE`.
+`scripts/enquiry-endpoint.gs` remains as an Apps Script alternative if mail should ever go
+through Google instead.
 
 ---
 

@@ -4,21 +4,16 @@ import Base from '../layouts/Base.astro';
 const email = 'lmiautomatalabs@gmail.com';
 
 /**
- * Enquiries are emailed straight to `email` by FormSubmit — no account, nothing
- * to deploy, the address is the endpoint. The first submission ever made needs a
- * one-time "Activate Form" link clicked in that inbox.
+ * Enquiries post to this site's own server (server.mjs), which sends through
+ * Resend — the same provider Sentro uses. Same origin, so no CORS, no
+ * third-party relay, no activation step, and delivery rides on a domain we
+ * control rather than someone else's sending reputation.
  *
- * Careful: FormSubmit answers with HTTP 200 even when it REJECTS a submission,
- * putting the real verdict in a `success` field as a string. Checking the status
- * code alone makes the form report success while sending nothing — which is
- * exactly what happened here. See the submit handler below.
- *
- * If you would rather nothing passed through a third party, deploy
- * scripts/enquiry-endpoint.gs and put its /exec URL in ENDPOINT_OVERRIDE.
+ * Needs RESEND_API_KEY set on the Railway service. Without it the endpoint logs
+ * the enquiry and answers 503, so a visitor is never shown a success that did
+ * not happen.
  */
-const ENDPOINT_OVERRIDE = '';
-const ACTION = ENDPOINT_OVERRIDE || `https://formsubmit.co/${email}`;
-const AJAX = ENDPOINT_OVERRIDE || `https://formsubmit.co/ajax/${email}`;
+const ACTION = '/api/enquiry';
 
 const steps = [
   { n: 1, label: 'About you' },
@@ -87,11 +82,8 @@ const needs = [
           </p>
         </div>
 
-        <form class="form" method="POST" action={ACTION} data-ajax={AJAX}>
-          <input type="hidden" name="_subject" value="New enquiry from lmiautomatalabs.com" />
-          <input type="hidden" name="_template" value="table" />
-          <input type="hidden" name="_captcha" value="false" />
-          {/* FormSubmit's honeypot: bots fill it, people never see it. */}
+        <form class="form" method="POST" action={ACTION} data-ajax={ACTION}>
+          {/* Honeypot: bots fill it, people never see it. */}
           <input type="text" name="_honey" class="honey" tabindex="-1" aria-hidden="true"
                  autocomplete="off" />
 
@@ -343,13 +335,17 @@ const needs = [
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify(payload),
         })
-          .then(function (r) { return r.json().catch(function () { return {}; }); })
+          .then(function (r) {
+            return r.json()
+              .catch(function () { return {}; })
+              .then(function (body) { return { status: r.status, body: body }; });
+          })
           .then(function (res) {
-            // FormSubmit answers 200 even when it refuses, and puts the real
-            // verdict in `success` as a STRING. Trusting the status code is what
-            // made this form claim it had sent while sending nothing.
-            if (String(res.success) !== 'true') {
-              throw new Error(res.message || 'The endpoint rejected the submission.');
+            // Our own endpoint answers with a real status code AND an `ok` flag.
+            // Both are checked: a success is only reported when the server
+            // actually confirmed the send.
+            if (res.status < 200 || res.status >= 300 || res.body.ok !== true) {
+              throw new Error(res.body.message || 'That could not be sent.');
             }
             form.hidden = true;
             done.hidden = false;
