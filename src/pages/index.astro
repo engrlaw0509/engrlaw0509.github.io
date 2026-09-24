@@ -1,149 +1,406 @@
 ---
-import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import BrowserFrame from '../components/BrowserFrame.astro';
+import Marquee from '../components/Marquee.astro';
+import UpdateList from '../components/UpdateList.astro';
+import { getProjects, allUpdates, latestPerProject } from '../lib/projects';
 
-const projects = (await getCollection('projects')).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const projects = await getProjects();
 const featured = projects.filter((p) => p.data.featured);
 const rest = projects.filter((p) => !p.data.featured);
+const [lead, ...pair] = featured;
 const liveCount = projects.filter((p) => p.data.status === 'production').length;
+const updates = allUpdates(projects);
+const latest = updates[0];
 
 /** Explicitly chosen in the project's index.md — see `hero` in content.config.ts. */
 const heroShot = projects.find((p) => p.data.hero && p.data.cover);
 
-const services = [
-  {
-    title: 'Connect the systems you already pay for',
-    body: 'Your point of sale, your accounting, your stock list — talking to each other, so a number typed once stops being typed three more times.',
-  },
-  {
-    title: 'Take the manual steps out',
-    body: 'The report somebody rebuilds by hand every Monday. The files emailed back and forth. Those can run themselves, including the parts that need reading and judgement.',
-  },
-  {
-    title: 'Get off the spreadsheet',
-    body: 'Move onto a proper system without closing for a day. Everything checked against the old records before you switch, and reversible until you are sure.',
-  },
+/*
+ * Every figure here is measured, counted or tested — not estimated. Each one
+ * names where it comes from; change it there first, then here.
+ */
+const stats = [
+  { n: 45, unit: 'ms', label: 'Median response for Croma MNL, measured from Manila' },   // croma-mnl-pg README
+  { n: 40, unit: '×', label: 'Faster than the spreadsheet system it replaced' },          // 1.8 s floor → 45 ms
+  { n: 767, unit: '', label: 'Automated tests guarding Kaha before its first cafe' },     // `vitest list` in kaha
+  { n: liveCount, unit: '', label: 'Products running in production today' },
+];
+
+const stack = [
+  'TypeScript', 'Postgres', 'Node.js', 'Next.js', 'React', 'Astro', 'Hono', 'Drizzle',
+  'Kysely', 'Supabase', 'Railway', 'Cloudflare R2', 'Resend', 'PayMongo', 'Android',
+  'Installable web apps', 'Apps Script', 'n8n', 'AI agents', 'Vitest',
 ];
 ---
 
 <Base
-  title="Automate your business"
-  description="LMI Automata Labs automates the work Philippine businesses do by hand — point of sale, payroll, client portals and the integrations between them. BIR-ready, e-wallet aware, and built to keep running when the connection drops."
+  title="LMI Automata Labs — Automate your business"
+  bare
+  description="LMI Automata Labs builds and automates the software Philippine businesses run on — point of sale, payroll, client portals and the integrations between them. Three products live in production."
 >
   <!-- ============ HERO ============ -->
   <section class="hero">
+    <div class="bg-grid hero-grid" aria-hidden="true"></div>
+    <div class="bg-glow" aria-hidden="true"></div>
+
     <div class="wrap hero-inner">
-      <p class="eyebrow">Software studio &middot; Metro Manila</p>
-      <h1 class="h-xl hero-title">Automate your <em>business</em>.</h1>
-      <p class="lede hero-lede">
-        We build the systems Philippine companies use every day &mdash; the POS at the
-        counter, the payroll on Friday, the portal a client checks on a Sunday.
-        <strong>Built here, for how business works here:</strong> receipts the BIR accepts,
-        e&#8209;wallets counted properly, and everything still running when the internet drops.
+      {latest && (
+        <a class="announce rise" href="/changelog/">
+          <span class="announce-tag">New</span>
+          <span class="announce-text">
+            <strong>{latest.project.name}</strong> &middot; {latest.title}
+          </span>
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
+            <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      )}
+
+      <h1 class="h-display hero-title rise" style="--d: 1">
+        <span class="ink-fade">Automate your</span>
+        <span class="grad-text">business.</span>
+      </h1>
+
+      <p class="lede hero-lede rise" style="--d: 2">
+        We build the software Philippine companies run on &mdash; the POS at the counter,
+        the payroll on Friday, the portal a client checks on a Sunday &mdash; and connect it
+        to what you already use. <strong>Built here, for how business works here:</strong>
+        {' '}BIR-style invoices, e&#8209;wallets counted properly, and nothing typed twice.
       </p>
-      <div class="btn-row hero-cta">
-        <a class="btn" href="/contact/">Talk about your business</a>
-        <a class="btn btn-ghost" href="/work/">See what we&rsquo;ve built</a>
+
+      <div class="btn-row hero-cta rise" style="--d: 3">
+        <a class="btn btn-lg" href="/contact/">
+          Start a project
+          <svg class="arrow" viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+            <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+        <a class="btn btn-ghost btn-lg" href="/work/">Explore the products</a>
       </div>
 
-      {heroShot?.data.cover && (
+      <ul class="proof rise" style="--d: 4">
+        <li>
+          <span class="status is-live"><span class="status-dot" aria-hidden="true"></span>Live</span>
+          {liveCount} products in production
+        </li>
+        <li>45&nbsp;ms median response</li>
+        <li>Built in Manila</li>
+      </ul>
+    </div>
+
+    {heroShot?.data.cover && (
+      <div class="wrap hero-stage rise" style="--d: 5">
         <div class="hero-shot">
-          <div class="frame frame-lg">
-            <div class="frame-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+          <BrowserFrame host={heroShot.data.host} large class="hero-frame">
             <Image
               src={heroShot.data.cover}
-              alt={`${heroShot.data.name} — the dashboard an owner sees`}
-              widths={[760, 1160, 1600]}
-              sizes="(min-width: 78rem) 70rem, 94vw"
+              alt={`${heroShot.data.name} — the dashboard an adviser opens every morning`}
+              widths={[760, 1160, 1600, 2200]}
+              sizes="(min-width: 80rem) 76rem, 94vw"
               loading="eager"
+              fetchpriority="high"
             />
+          </BrowserFrame>
+
+          <!-- True facts from four products, styled as live notifications. -->
+          <div class="float f-a" aria-hidden="true">
+            <span class="float-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M13 3 5 13h6l-1 8 8-10h-6l1-8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </span>
+            <span><b>Croma MNL</b>45 ms median response</span>
           </div>
-          <p class="hero-caption">
-            {heroShot.data.name} &mdash; {heroShot.data.sector.toLowerCase()}
-          </p>
+          <div class="float f-b" aria-hidden="true">
+            <span class="float-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.4 7.5 9.5 4.4-1.1 7.5-4.9 7.5-9.5V6L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m8.8 12.2 2.2 2.2 4.4-4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span><b>Sentro</b>Encrypted backup, every night</span>
+          </div>
+          <div class="float f-c" aria-hidden="true">
+            <span class="float-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span><b>Kaha</b>767 automated tests</span>
+          </div>
+          <div class="float f-d" aria-hidden="true">
+            <span class="float-icon">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M4 12a8 8 0 0 1 13.7-5.6M20 12a8 8 0 0 1-13.7 5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 3v3.6h-3.6M6 21v-3.6h3.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span><b>EA Builders</b>Site attendance → payroll</span>
+          </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
   </section>
 
-  <!-- ============ METRICS ============ -->
-  <section class="wrap band">
-    <div class="metrics">
-      <div>
-        <span class="metric-n">{projects.length}</span>
-        <span class="metric-l">Products built</span>
-      </div>
-      <div>
-        <span class="metric-n">{liveCount}</span>
-        <span class="metric-l">Running live</span>
-      </div>
-      <div>
-        <span class="metric-n">3</span>
-        <span class="metric-l">Industries</span>
-      </div>
-      <div>
-        <span class="metric-n">PH</span>
-        <span class="metric-l">BIR &amp; e&#8209;wallet ready</span>
-      </div>
-    </div>
+  <!-- ============ STACK ============ -->
+  <section class="stack-band" aria-label="Our stack">
+    <p class="stack-h">The stack behind every product</p>
+    <Marquee items={stack} />
   </section>
 
-  <!-- ============ WORK ============ -->
-  <section class="section" id="work">
+  <!-- ============ PRODUCTS ============ -->
+  <section class="section" id="products">
     <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">The work</p>
-        <h2 class="h-lg">Systems running real businesses</h2>
+      <div class="section-head reveal">
+        <p class="eyebrow">Products</p>
+        <h2 class="h-lg ink-fade">{projects.length} products. {liveCount} running in production.</h2>
         <p class="lede">
-          {liveCount} of these are in production today &mdash; taking payments, paying staff,
-          and keeping owners out of spreadsheets.
+          Each one replaced a spreadsheet, a paper book, or a stack of apps that never spoke
+          to each other &mdash; and each is still being improved every week.
         </p>
       </div>
 
-      <div class="grid-featured">
-        {featured.map((project) => <ProjectCard project={project} featured />)}
-      </div>
-
-      {rest.length > 0 && (
-        <div class="grid-rest">
-          {rest.map((project) => <ProjectCard project={project} />)}
-        </div>
-      )}
-
-      <div class="btn-row section-foot">
-        <a class="btn btn-ghost" href="/work/">All projects</a>
+      <div class="products">
+        {lead && <div class="reveal"><ProjectCard project={lead} layout="wide" /></div>}
+        {pair.length > 0 && (
+          <div class="grid-2">
+            {pair.map((p) => <div class="reveal"><ProjectCard project={p} /></div>)}
+          </div>
+        )}
+        {rest.length === 1 && <div class="reveal"><ProjectCard project={rest[0]} layout="wide" /></div>}
+        {rest.length > 1 && (
+          <div class="grid-2">
+            {rest.map((p) => <div class="reveal"><ProjectCard project={p} /></div>)}
+          </div>
+        )}
       </div>
     </div>
   </section>
 
-  <!-- ============ SERVICES ============ -->
-  <section class="section section-tint">
+  <!-- ============ CAPABILITIES ============ -->
+  <section class="section section-alt">
+    <div class="bg-grid caps-grid" aria-hidden="true"></div>
     <div class="wrap">
-      <div class="section-head">
-        <p class="eyebrow">Services</p>
-        <h2 class="h-lg">Not everything needs a new system</h2>
+      <div class="section-head is-center reveal">
+        <p class="eyebrow">Capabilities</p>
+        <h2 class="h-lg ink-fade">The building blocks behind every system</h2>
         <p class="lede">
-          Often the software is already there and the problem is that none of it talks.
-          That work is usually faster and cheaper than building something new.
+          The same parts, assembled for a cafe, an insurance agency or a construction
+          company. Often the fastest win is connecting what you already own.
         </p>
       </div>
 
-      <div class="svc-grid">
-        {services.map((s, i) => (
-          <div class="card-surface svc">
-            <span class="svc-n">{String(i + 1).padStart(2, '0')}</span>
-            <h3 class="h-md svc-title">{s.title}</h3>
-            <p class="muted">{s.body}</p>
+      <div class="bento">
+        <!-- POS -->
+        <article class="cell edge spot span-2 reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">Point of sale, built to BIR rules</h3>
+            <p class="cell-body">
+              Sales invoices on 58&nbsp;mm thermal paper with the VAT split to the centavo,
+              every e&#8209;wallet on one line, and sales that are safe to retry when the
+              connection drops.
+            </p>
+          </div>
+          <div class="viz viz-receipt" aria-hidden="true">
+            <div class="rcpt">
+              <p class="rcpt-h">SALES INVOICE</p>
+              <p class="rcpt-sub">No. 0004213 &middot; POS 1</p>
+              <div class="rcpt-rows">
+                <p><span>Spanish latte</span><span>150.00</span></p>
+                <p><span>Oat milk</span><span>30.00</span></p>
+                <p><span>Croissant</span><span>95.00</span></p>
+              </div>
+              <div class="rcpt-rows is-tax">
+                <p><span>VATable sales</span><span>245.54</span></p>
+                <p><span>VAT 12%</span><span>29.46</span></p>
+              </div>
+              <p class="rcpt-total"><span>TOTAL</span><span>&#8369;275.00</span></p>
+              <p class="rcpt-pay"><span>E-wallet</span><span>275.00</span></p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Payroll -->
+        <article class="cell edge spot reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">Payroll that fills itself</h3>
+            <p class="cell-body">
+              Attendance logged on site or at the counter becomes the pay run &mdash; SSS,
+              PhilHealth and Pag&#8209;IBIG from the statutory tables.
+            </p>
+          </div>
+          <div class="viz viz-pay" aria-hidden="true">
+            <p class="pay-row"><span class="pay-av">RS</span><span class="pay-bar" style="--w: 92%"></span><span class="pay-h">8.0h</span></p>
+            <p class="pay-row"><span class="pay-av">JL</span><span class="pay-bar" style="--w: 78%"></span><span class="pay-h">7.5h</span></p>
+            <p class="pay-row"><span class="pay-av">MA</span><span class="pay-bar" style="--w: 96%"></span><span class="pay-h">8.5h</span></p>
+            <p class="pay-ok">Pay run ready &middot; nothing re-typed</p>
+          </div>
+        </article>
+
+        <!-- Integrations -->
+        <article class="cell edge spot reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">Systems that talk to each other</h3>
+            <p class="cell-body">
+              Your POS, accounting, stock and e&#8209;wallets connected, so a figure typed once
+              appears everywhere it should.
+            </p>
+          </div>
+          <div class="viz viz-int" aria-hidden="true">
+            <svg viewBox="0 0 300 150" class="int-svg">
+              <path id="w1" class="wire" d="M62 34 C 110 34, 110 75, 150 75" />
+              <path id="w2" class="wire" d="M62 116 C 110 116, 110 75, 150 75" />
+              <path id="w3" class="wire" d="M150 75 C 190 75, 190 34, 238 34" />
+              <path id="w4" class="wire" d="M150 75 C 190 75, 190 116, 238 116" />
+              <circle class="packet" r="3"><animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#w1" /></animateMotion></circle>
+              <circle class="packet" r="3"><animateMotion dur="3.1s" begin="0.8s" repeatCount="indefinite"><mpath href="#w2" /></animateMotion></circle>
+              <circle class="packet" r="3"><animateMotion dur="2.8s" begin="0.4s" repeatCount="indefinite"><mpath href="#w3" /></animateMotion></circle>
+              <circle class="packet" r="3"><animateMotion dur="3.4s" begin="1.2s" repeatCount="indefinite"><mpath href="#w4" /></animateMotion></circle>
+              <g class="node"><rect x="4" y="20" width="58" height="28" rx="8" /><text x="33" y="38">POS</text></g>
+              <g class="node"><rect x="4" y="102" width="58" height="28" rx="8" /><text x="33" y="120">Stock</text></g>
+              <g class="node"><rect x="238" y="20" width="58" height="28" rx="8" /><text x="267" y="38">Books</text></g>
+              <g class="node"><rect x="238" y="102" width="58" height="28" rx="8" /><text x="267" y="120">Wallets</text></g>
+              <g class="hub"><rect x="126" y="55" width="48" height="40" rx="12" /><text x="150" y="79">sync</text></g>
+            </svg>
+          </div>
+        </article>
+
+        <!-- AI -->
+        <article class="cell edge spot span-2 reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">AI that does the reading</h3>
+            <p class="cell-body">
+              Invoices, forms and reports read and entered for you, checked against what
+              should be there, with a person approving anything that matters.
+            </p>
+          </div>
+          <div class="viz viz-ai" aria-hidden="true">
+            <div class="doc">
+              <span class="doc-l" style="--w: 58%"></span>
+              <span class="doc-l" style="--w: 86%"></span>
+              <span class="doc-l" style="--w: 72%"></span>
+              <span class="doc-l" style="--w: 90%"></span>
+              <span class="doc-l" style="--w: 44%"></span>
+              <span class="doc-l" style="--w: 80%"></span>
+              <span class="doc-scan"></span>
+            </div>
+            <span class="ai-arrow">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M4 12h15M13 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <div class="fields">
+              <p><span>Supplier</span><span>Metro Dairy Co.</span></p>
+              <p><span>Invoice no.</span><span>MD-20931</span></p>
+              <p><span>Total</span><span>&#8369;18,450.00</span></p>
+              <p class="fields-ok">Matches the order &middot; ready to approve</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Portals -->
+        <article class="cell edge spot reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">Portals clients open themselves</h3>
+            <p class="cell-body">
+              A link in their email, no password &mdash; to see their cover, their build or
+              their balance without calling you.
+            </p>
+          </div>
+          <div class="viz viz-phone" aria-hidden="true">
+            <div class="phone">
+              <span class="phone-notch"></span>
+              <p class="ph-h">Hello, Ana</p>
+              <p class="ph-card"><span>Total cover</span><strong>&#8369;4.5M</strong></p>
+              <p class="ph-card"><span>Next payment</span><strong>18 Oct</strong></p>
+              <p class="ph-link">Signed in by magic link</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- Dashboards -->
+        <article class="cell edge spot reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">Numbers you can see live</h3>
+            <p class="cell-body">
+              Dashboards that move as the day does: sales by the hour, production by
+              adviser, profit by project.
+            </p>
+          </div>
+          <div class="viz viz-chart" aria-hidden="true">
+            <p class="kpi"><span>Sales today</span><strong>&#8369;48,210</strong><em>+12%</em></p>
+            <svg viewBox="0 0 200 64" class="spark" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="spark-fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="currentColor" stop-opacity=".35" />
+                  <stop offset="1" stop-color="currentColor" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path class="spark-area" d="M0 52 L20 46 L40 49 L60 36 L80 40 L100 28 L120 31 L140 18 L160 22 L180 10 L200 14 L200 64 L0 64 Z" />
+              <path class="spark-line" d="M0 52 L20 46 L40 49 L60 36 L80 40 L100 28 L120 31 L140 18 L160 22 L180 10 L200 14" />
+            </svg>
+          </div>
+        </article>
+
+        <!-- Security -->
+        <article class="cell edge spot reveal">
+          <div class="cell-copy">
+            <h3 class="cell-title">Secure by default</h3>
+            <p class="cell-body">
+              Built so that a mistake cannot quietly leak one customer's data to another.
+            </p>
+          </div>
+          <ul class="viz viz-sec" aria-hidden="true">
+            <li>Each business walled off from the next</li>
+            <li>Every change kept on a trail</li>
+            <li>Nightly encrypted backups, restore-tested</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="btn-row caps-foot reveal">
+        <a class="btn btn-ghost" href="/services/">See how an engagement works</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MEASURED ============ -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head is-center reveal">
+        <p class="eyebrow">Measured, not claimed</p>
+        <h2 class="h-lg ink-fade">Engineering you can check</h2>
+        <p class="lede">
+          Numbers from the systems themselves &mdash; measured, counted or tested, never
+          estimated.
+        </p>
+      </div>
+      <div class="stats reveal">
+        {stats.map((s) => (
+          <div class="stat">
+            <p class="stat-n">
+              <span class="grad-text" data-count={s.n}>{s.n.toLocaleString('en-US')}</span>
+              {s.unit && <span class="stat-u">{s.unit}</span>}
+            </p>
+            <p class="stat-l">{s.label}</p>
           </div>
         ))}
       </div>
+    </div>
+  </section>
 
-      <div class="btn-row section-foot">
-        <a class="btn btn-ghost" href="/services/">How this works</a>
+  <!-- ============ CHANGELOG ============ -->
+  <section class="section section-alt">
+    <div class="wrap log">
+      <div class="section-head log-head reveal">
+        <p class="eyebrow">Changelog</p>
+        <h2 class="h-lg ink-fade">Always shipping</h2>
+        <p class="lede">
+          Every product here is still being worked on. The latest, across all four.
+        </p>
+        <a class="link-arrow" href="/changelog/">
+          Full changelog
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
+            <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      </div>
+      <div class="card-surface log-list reveal">
+        <UpdateList items={latestPerProject(updates, 2)} showProject />
       </div>
     </div>
   </section>
@@ -151,16 +408,25 @@ const services = [
   <!-- ============ CTA ============ -->
   <section class="section">
     <div class="wrap">
-      <div class="cta">
+      <div class="cta edge reveal">
+        <div class="bg-grid" aria-hidden="true"></div>
+        <div class="cta-glow" aria-hidden="true"></div>
         <p class="eyebrow">Next step</p>
-        <h2 class="h-lg">Tell us where the day breaks.</h2>
+        <h2 class="h-xl ink-fade cta-title">Tell us where the week breaks.</h2>
         <p class="lede cta-lede">
           The best place to start is the part of the week everyone dreads &mdash; closing the
-          the POS, chasing timesheets, rebuilding the same report. Describe that, and we will
-          tell you honestly whether it is worth building.
+          POS, chasing timesheets, rebuilding the same report. Describe that, and we will tell
+          you honestly whether it is worth building.
         </p>
-        <div class="btn-row">
-          <a class="btn" href="/contact/">Start a conversation</a>
+        <div class="btn-row cta-row">
+          <a class="btn btn-lg" href="/contact/">
+            Start a project
+            <svg class="arrow" viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
+              <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7"
+                stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+          <a class="btn btn-ghost btn-lg" href="mailto:lmiautomatalabs@gmail.com">Email us</a>
         </div>
       </div>
     </div>
@@ -171,77 +437,510 @@ const services = [
   /* ---------------- hero ---------------- */
   .hero {
     position: relative;
-    padding-block: clamp(2.75rem, 7vw, 5rem) 0;
+    isolation: isolate;
+    padding-block: clamp(3.5rem, 9vw, 7rem) 0;
     overflow: hidden;
   }
-  /* A soft wash behind the hero — depth without a gradient slab. */
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 34rem;
-    background: radial-gradient(70% 55% at 50% 0%, var(--accent-wash), transparent 72%);
-    pointer-events: none;
+  .hero > .bg-grid, .hero > .bg-glow { z-index: -1; }
+  .hero-grid { background-size: 64px 64px; }
+  .hero-inner {
+    display: grid;
+    /* minmax(0, 1fr), not the implicit auto track: the announcement's nowrap
+       text would otherwise widen the column past a phone screen, and
+       overflow-x: clip on body would hide the cut-off silently. */
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+    gap: 1.5rem;
   }
-  .hero-inner { position: relative; display: grid; justify-items: center; text-align: center; gap: 1.35rem; }
-  .hero-title { max-width: 18ch; }
-  .hero-title em { font-style: normal; color: var(--accent); }
-  .hero-lede { max-width: 56ch; }
-  .hero-cta { justify-content: center; margin-top: 0.35rem; }
 
-  .hero-shot { width: 100%; margin-top: clamp(2.25rem, 5vw, 3.5rem); display: grid; gap: 0.75rem; }
-  .hero-caption {
+  .announce {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    max-width: 100%;
+    padding: 0.35rem 0.85rem 0.35rem 0.35rem;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--line-2);
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+    color: var(--ink-2);
+    font-size: 0.8125rem;
+    text-decoration: none;
+    transition: border-color 200ms var(--ease), color 200ms var(--ease);
+  }
+  .announce:hover { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 60%, var(--line-2)); }
+  .announce-tag {
+    flex: none;
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.55rem;
+    border-radius: var(--r-pill);
+    background: var(--grad);
+    color: var(--on-accent);
+  }
+  .announce-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .announce-text strong { color: var(--ink); font-weight: 600; }
+  .announce svg { flex: none; transition: transform 200ms var(--ease); }
+  .announce:hover svg { transform: translateX(3px); }
+
+  .hero-title { display: grid; }
+  .hero-lede { max-width: 60ch; }
+  .hero-cta { justify-content: center; margin-top: 0.25rem; }
+
+  .proof {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem 1.5rem;
     font-family: var(--f-mono);
     font-size: 0.75rem;
-    letter-spacing: 0.06em;
+    color: var(--ink-3);
+  }
+  .proof li { display: inline-flex; align-items: center; gap: 0.55rem; }
+  .proof li + li::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--line-2);
+    margin-right: 0.95rem;
+  }
+  /* Once the row wraps, a separator would start the second line. */
+  @media (max-width: 30rem) { .proof li + li::before { display: none; } }
+
+  /* ---------------- hero shot ---------------- */
+  .hero-stage { margin-top: clamp(3rem, 7vw, 5rem); }
+  .hero-shot { position: relative; max-width: 76rem; margin-inline: auto; }
+  .hero-shot::before {
+    content: '';
+    position: absolute;
+    inset: 8% 6% -6%;
+    background: radial-gradient(50% 50% at 50% 50%, var(--glow), transparent 70%);
+    filter: blur(40px);
+    opacity: 0.55;
+    z-index: -1;
+  }
+  /* Fade the bottom of the screenshot into the page, so it reads as a window
+     into the product rather than a picture pasted on. */
+  .hero-shot::after {
+    content: '';
+    position: absolute;
+    inset: auto -1px -1px;
+    height: 32%;
+    background: linear-gradient(to bottom, transparent, var(--bg) 92%);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hero-shot :global(.hero-frame) { transform-origin: 50% 0%; }
+  .hero-shot :global(img) { aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+
+  /* Tilted back, and settling flat as it scrolls into view — where the browser
+     supports scroll-driven animation. Everywhere else it is simply flat. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .hero-shot :global(.hero-frame) {
+        animation: settle linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 48%;
+      }
+    }
+  }
+  @keyframes settle {
+    from { transform: perspective(2000px) rotateX(16deg) scale(0.94); }
+    to   { transform: none; }
+  }
+
+  .float {
+    position: absolute;
+    z-index: 3;
+    display: none;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem 0.95rem 0.65rem 0.65rem;
+    border-radius: var(--r-lg);
+    border: 1px solid var(--line-2);
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-lg);
+    text-align: left;
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .float b {
+    display: block;
+    font-family: var(--f-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .float-icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9px;
+    background: var(--grad);
+    color: var(--on-accent);
+    flex: none;
+  }
+  .f-a { top: 30%; left: -3%; }
+  .f-b { top: 16%; right: -3%; }
+  .f-c { top: 58%; left: 5%; }
+  .f-d { top: 50%; right: 4%; }
+  @media (min-width: 48rem) { .f-a, .f-b { display: inline-flex; } }
+  @media (min-width: 72rem) { .f-c, .f-d { display: inline-flex; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .float { animation: bob 7s ease-in-out infinite alternate; }
+    .f-b { animation-delay: -2s; }
+    .f-c { animation-delay: -4s; }
+    .f-d { animation-delay: -1s; }
+  }
+  @keyframes bob { to { transform: translateY(-10px); } }
+
+  /* ---------------- stack band ---------------- */
+  .stack-band {
+    position: relative;
+    padding-block: clamp(1.75rem, 3vw, 2.5rem);
+    border-block: 1px solid var(--line);
+    display: grid;
+    gap: 1rem;
+    background: var(--bg);
+    z-index: 3;
+  }
+  .stack-h {
+    text-align: center;
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ink-3);
   }
 
-  /* ---------------- metrics band ---------------- */
-  .band { padding-top: clamp(2rem, 4vw, 3rem); }
+  /* ---------------- products ---------------- */
+  .products { display: grid; gap: clamp(1.25rem, 2.5vw, 1.75rem); }
+  .grid-2 { display: grid; gap: clamp(1.25rem, 2.5vw, 1.75rem); }
+  @media (min-width: 52rem) {
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-2 > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  }
+  .products :global(.pcard) { height: 100%; }
 
-  /* ---------------- work ---------------- */
-  .grid-featured { display: grid; gap: clamp(2.25rem, 4.5vw, 3.25rem); }
-  @media (min-width: 62rem) {
-    .grid-featured { grid-template-columns: repeat(auto-fill, minmax(min(100%, 27rem), 1fr)); }
+  /* ---------------- capabilities bento ---------------- */
+  .caps-grid {
+    -webkit-mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 70% 50% at 50% 0%, #000 20%, transparent 75%);
   }
-  .grid-rest {
+  .bento {
     display: grid;
-    gap: clamp(2.25rem, 4.5vw, 3.25rem) 2rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
-    margin-top: clamp(2.25rem, 4.5vw, 3.25rem);
+    gap: 1rem;
+    grid-template-columns: 1fr;
   }
-  .section-foot { margin-top: clamp(2.25rem, 4.5vw, 3rem); }
+  @media (min-width: 44rem) { .bento { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64rem) {
+    .bento { grid-template-columns: repeat(3, 1fr); }
+    .span-2 { grid-column: span 2; }
+  }
+  @media (min-width: 44rem) and (max-width: 63.99rem) {
+    .span-2 { grid-column: span 2; }
+  }
 
-  /* ---------------- services ---------------- */
-  .svc-grid {
+  .cell {
+    position: relative;
     display: grid;
-    gap: 1.25rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    align-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(1.35rem, 2.4vw, 1.75rem);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+    min-height: 17rem;
   }
-  .svc { display: grid; gap: 0.55rem; align-content: start; }
-  .svc-n {
+  /* No hover lift here: .reveal's scroll animation holds `transform` once it
+     has played, which would silently override one. The spotlight is the
+     hover feedback. */
+  .span-2 { align-content: stretch; }
+  @media (min-width: 44rem) {
+    .span-2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; }
+  }
+  .cell-copy { display: grid; gap: 0.5rem; align-content: start; }
+  .cell-title { font-size: 1.1875rem; font-weight: 650; letter-spacing: -0.025em; }
+  .cell-body { color: var(--ink-2); font-size: 0.9375rem; max-width: 46ch; }
+
+  .viz {
     font-family: var(--f-mono);
     font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--accent);
+    color: var(--ink-2);
   }
-  .svc-title { font-size: clamp(1.125rem, 1.05rem + 0.4vw, 1.3125rem); }
+
+  /* receipt */
+  .viz-receipt { display: grid; justify-items: center; }
+  .rcpt {
+    width: min(100%, 15.5rem);
+    padding: 1rem 1rem 1.2rem;
+    background: var(--paper);
+    color: var(--paper-ink);
+    border-radius: 6px 6px 2px 2px;
+    box-shadow: var(--shadow-lg);
+    transform: rotate(-2.5deg);
+    display: grid;
+    gap: 0.55rem;
+    /* A torn thermal-paper edge. */
+    -webkit-mask: linear-gradient(#000, #000) top / 100% calc(100% - 6px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 6px repeat-x;
+    mask: linear-gradient(#000, #000) top / 100% calc(100% - 6px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 6px repeat-x;
+  }
+  .rcpt p { display: flex; justify-content: space-between; gap: 1rem; margin: 0; }
+  .rcpt-h { justify-content: center !important; font-weight: 500; letter-spacing: 0.14em; }
+  .rcpt-sub { justify-content: center !important; color: var(--paper-dim); font-size: 0.6875rem; }
+  .rcpt-rows { display: grid; gap: 0.25rem; padding-block: 0.45rem; border-top: 1px dashed var(--paper-line); }
+  .rcpt-rows.is-tax { color: var(--paper-dim); }
+  .rcpt-total { font-weight: 500; font-size: 0.875rem; border-top: 1px dashed var(--paper-line); padding-top: 0.5rem; }
+  .rcpt-pay { color: var(--paper-dim); }
+
+  /* payroll */
+  .viz-pay { display: grid; gap: 0.6rem; }
+  .pay-row { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.7rem; margin: 0; }
+  .pay-av {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--surface-3);
+    color: var(--ink);
+    font-size: 0.625rem;
+  }
+  .pay-bar { height: 0.45rem; border-radius: var(--r-pill); background: var(--surface-3); overflow: hidden; position: relative; }
+  .pay-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--w);
+    border-radius: inherit;
+    background: var(--grad);
+  }
+  .pay-h { color: var(--ink-3); }
+  .pay-ok, .fields-ok {
+    justify-self: start;
+    margin: 0.2rem 0 0;
+    padding: 0.35rem 0.6rem;
+    border-radius: var(--r-pill);
+    color: var(--live);
+    background: color-mix(in srgb, var(--live) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--live) 30%, transparent);
+    font-size: 0.6875rem;
+  }
+
+  /* integrations */
+  .int-svg { width: 100%; height: auto; overflow: visible; }
+  .int-svg .wire { fill: none; stroke: var(--line-2); stroke-width: 1.5; }
+  .int-svg .packet { fill: var(--cyan); filter: drop-shadow(0 0 4px var(--cyan)); }
+  .int-svg .node rect { fill: var(--surface-2); stroke: var(--line-2); }
+  .int-svg .hub rect { fill: var(--surface-3); stroke: var(--accent); }
+  .int-svg text {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    fill: var(--ink-2);
+    text-anchor: middle;
+  }
+  .int-svg .hub text { fill: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .int-svg .packet { display: none; } }
+
+  /* AI */
+  .viz-ai { display: grid; grid-template-columns: minmax(0, 0.8fr) auto minmax(0, 1.2fr); align-items: center; gap: 0.8rem; }
+  .doc {
+    position: relative;
+    display: grid;
+    gap: 0.55rem;
+    padding: 1rem 0.9rem;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .doc-l { display: block; height: 0.35rem; width: var(--w); border-radius: var(--r-pill); background: var(--surface-3); }
+  .doc-scan {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--cyan);
+    box-shadow: 0 0 14px 2px var(--cyan);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .doc-scan { animation: scan 2.8s ease-in-out infinite alternate; }
+  }
+  @keyframes scan { to { transform: translateY(6.5rem); } }
+  .ai-arrow { color: var(--accent); }
+  .fields { display: grid; gap: 0.4rem; }
+  .fields p { display: flex; justify-content: space-between; gap: 0.75rem; margin: 0; padding-bottom: 0.35rem; border-bottom: 1px solid var(--line); }
+  .fields p span:first-child { color: var(--ink-3); }
+  .fields p span:last-child { color: var(--ink); text-align: right; }
+  .fields .fields-ok { border-bottom: 1px solid color-mix(in srgb, var(--live) 30%, transparent); }
+  @media (max-width: 30rem) {
+    .viz-ai { grid-template-columns: 1fr; }
+    .ai-arrow { transform: rotate(90deg); justify-self: center; }
+  }
+
+  /* phone */
+  .viz-phone { display: grid; justify-items: center; }
+  .phone {
+    position: relative;
+    width: 11.5rem;
+    padding: 1.6rem 0.8rem 0.9rem;
+    border-radius: 1.5rem;
+    border: 1px solid var(--line-2);
+    background: var(--surface-2);
+    display: grid;
+    gap: 0.45rem;
+    box-shadow: var(--shadow);
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0.55rem;
+    left: 50%;
+    width: 3.2rem;
+    height: 0.45rem;
+    margin-left: -1.6rem;
+    border-radius: var(--r-pill);
+    background: var(--line-2);
+  }
+  .ph-h { margin: 0 0 0.2rem; color: var(--ink); font-family: var(--f-display); font-size: 0.9375rem; font-weight: 650; }
+  .ph-card {
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+  }
+  .ph-card span { color: var(--ink-3); font-size: 0.625rem; }
+  .ph-card strong { color: var(--ink); font-weight: 500; }
+  .ph-link { margin: 0.2rem 0 0; color: var(--live); font-size: 0.625rem; text-align: center; }
+
+  /* chart */
+  .viz-chart { display: grid; gap: 0.6rem; color: var(--accent); }
+  .kpi { margin: 0; display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+  .kpi span { color: var(--ink-3); flex-basis: 100%; }
+  .kpi strong { font-family: var(--f-display); font-size: 1.6rem; font-weight: 650; letter-spacing: -0.04em; color: var(--ink); }
+  .kpi em { font-style: normal; color: var(--live); }
+  .spark { width: 100%; height: 4rem; }
+  .spark-area { fill: url(#spark-fill); }
+  .spark-line { fill: none; stroke: currentColor; stroke-width: 2; vector-effect: non-scaling-stroke; }
+
+  /* security */
+  .viz-sec { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+  .viz-sec li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+  }
+  .viz-sec li::before {
+    content: '✓';
+    display: grid;
+    place-items: center;
+    width: 1.2rem;
+    height: 1.2rem;
+    flex: none;
+    border-radius: 50%;
+    color: var(--live);
+    background: color-mix(in srgb, var(--live) 14%, transparent);
+    font-size: 0.6875rem;
+  }
+
+  .caps-foot { justify-content: center; margin-top: clamp(2rem, 4vw, 3rem); }
+
+  /* ---------------- stats ---------------- */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .stat {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    background: var(--surface);
+  }
+  .stat-n {
+    display: flex;
+    align-items: baseline;
+    gap: 0.2rem;
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 1.8rem + 3vw, 4.25rem);
+    letter-spacing: -0.05em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-u { font-size: 0.45em; color: var(--ink-3); letter-spacing: -0.02em; }
+  .stat-l { color: var(--ink-2); font-size: 0.9375rem; max-width: 26ch; }
+
+  /* ---------------- changelog ---------------- */
+  .log { display: grid; gap: 2rem; }
+  @media (min-width: 64rem) {
+    .log { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 4rem; align-items: start; }
+    .log-head { position: sticky; top: 6rem; margin-bottom: 0; }
+  }
+  .log-list { padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1rem, 2.5vw, 1.75rem); }
 
   /* ---------------- cta ---------------- */
   .cta {
+    position: relative;
+    isolation: isolate;
     display: grid;
     justify-items: center;
     text-align: center;
-    gap: 1.1rem;
-    padding: clamp(2.5rem, 5vw, 4rem) clamp(1.25rem, 4vw, 3rem);
-    background:
-      radial-gradient(90% 120% at 50% 0%, var(--accent-wash), transparent 70%),
-      var(--bg-tint);
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
+    gap: 1.25rem;
+    padding: clamp(3rem, 8vw, 6rem) clamp(1.25rem, 5vw, 4rem);
+    border-radius: var(--r-xl);
+    overflow: hidden;
   }
+  .cta > .bg-grid {
+    z-index: -1;
+    -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 100%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 60% 70% at 50% 100%, #000 20%, transparent 75%);
+  }
+  .cta-glow {
+    position: absolute;
+    inset: auto -20% -60%;
+    height: 110%;
+    background: radial-gradient(50% 50% at 50% 50%, var(--glow), transparent 70%);
+    opacity: 0.45;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .cta .eyebrow::after {
+    content: '';
+    width: 1.1rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.7;
+  }
+  .cta-title { max-width: 16ch; }
   .cta-lede { max-width: 58ch; }
+  .cta-row { justify-content: center; margin-top: 0.5rem; }
 </style>

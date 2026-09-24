@@ -1,0 +1,21 @@
+---
+/** The title block every inner page opens with, over the grid-and-glow ground. */
+interface Props {
+  eyebrow: string;
+  title: string;
+  lede?: string;
+}
+
+const { eyebrow, title, lede } = Astro.props;
+---
+
+<section class="page-head">
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+  <div class="wrap head-inner">
+    <p class="eyebrow rise">{eyebrow}</p>
+    <h1 class="h-xl head-title ink-fade rise" style="--d: 1">{title}</h1>
+    {lede && <p class="lede rise" style="--d: 2">{lede}</p>}
+    <slot />
+  </div>
+</section>

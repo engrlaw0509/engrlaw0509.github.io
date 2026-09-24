@@ -1,0 +1,73 @@
+---
+/**
+ * The stack, scrolling. The list is rendered twice so the loop is seamless;
+ * the copy is aria-hidden so a screen reader hears each name once. Under
+ * reduced motion it stops and wraps into a plain centred list.
+ */
+interface Props {
+  items: string[];
+}
+
+const { items } = Astro.props;
+---
+
+<div class="marquee" role="region" aria-label="Technologies we build with">
+  <div class="marquee-track">
+    <ul class="mq-list">
+      {items.map((t) => <li>{t}</li>)}
+    </ul>
+    <ul class="mq-list" aria-hidden="true">
+      {items.map((t) => <li>{t}</li>)}
+    </ul>
+  </div>
+</div>
+
+<style>
+  .marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 48s linear infinite;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+
+  .mq-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Still: one centred, wrapped list, and the loop's copy gone. */
+  @media (prefers-reduced-motion: reduce) {
+    .marquee { -webkit-mask-image: none; mask-image: none; }
+    .marquee-track { animation: none; width: auto; justify-content: center; }
+    .mq-list { flex-wrap: wrap; justify-content: center; row-gap: 0.6rem; }
+    .mq-list[aria-hidden='true'] { display: none; }
+  }
+  .mq-list li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding-inline: 1.35rem;
+    font-family: var(--f-mono);
+    font-size: 0.875rem;
+    color: var(--ink-3);
+    white-space: nowrap;
+  }
+  .mq-list li::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    background: var(--grad);
+    opacity: 0.85;
+  }
+</style>

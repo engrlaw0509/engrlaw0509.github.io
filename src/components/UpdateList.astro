@@ -1,0 +1,104 @@
+---
+import { fmtDay, isoDay, type Update } from '../lib/projects';
+
+/**
+ * A vertical timeline of shipped work. With `showProject`, each entry links to
+ * the project it belongs to — used on the homepage and /changelog/, where
+ * entries from every project are interleaved.
+ */
+interface Props {
+  items: Array<Pick<Update, 'date' | 'title' | 'body'> & { project?: Update['project'] }>;
+  showProject?: boolean;
+}
+
+const { items, showProject = false } = Astro.props;
+---
+
+<ol class="ulist">
+  {items.map((u) => (
+    <li class="ulist-item">
+      <time class="ulist-date" datetime={isoDay(u.date)}>{fmtDay(u.date)}</time>
+      <span class="ulist-node" aria-hidden="true"></span>
+      <div class="ulist-body">
+        {showProject && u.project && (
+          <a class="ulist-proj" href={`/work/${u.project.id}/`}>{u.project.name}</a>
+        )}
+        <p class="ulist-title">{u.title}</p>
+        {u.body && <p class="ulist-text">{u.body}</p>}
+      </div>
+    </li>
+  ))}
+</ol>
+
+<style>
+  .ulist {
+    --node: 0.6rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    position: relative;
+  }
+  .ulist-item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 4.25rem var(--node) minmax(0, 1fr);
+    gap: 0 1.1rem;
+    align-items: start;
+    padding-block: 0.85rem;
+  }
+  /* The rail: drawn per item so it never runs past the last node. */
+  .ulist-item::before {
+    content: '';
+    position: absolute;
+    left: calc(4.25rem + 1.1rem + var(--node) / 2 - 0.5px);
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--line-2);
+  }
+  .ulist-item:first-child::before { top: 1.35rem; }
+  .ulist-item:last-child::before { bottom: auto; height: 1.35rem; }
+
+  .ulist-date {
+    font-family: var(--f-mono);
+    font-size: 0.75rem;
+    color: var(--ink-3);
+    padding-top: 0.2rem;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .ulist-node {
+    position: relative;
+    width: var(--node);
+    height: var(--node);
+    margin-top: 0.42rem;
+    border-radius: 50%;
+    background: var(--bg);
+    box-shadow: 0 0 0 2px var(--accent), 0 0 12px var(--glow);
+    z-index: 1;
+  }
+  .ulist-item:first-child .ulist-node { background: var(--accent); }
+
+  .ulist-body { display: grid; gap: 0.2rem; }
+  .ulist-proj {
+    justify-self: start;
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .ulist-proj:hover { text-decoration: underline; }
+  .ulist-title { color: var(--ink); font-weight: 500; line-height: 1.45; }
+  .ulist-text { color: var(--ink-2); font-size: 0.9375rem; }
+
+  @media (max-width: 30rem) {
+    .ulist-item { grid-template-columns: var(--node) minmax(0, 1fr); gap: 0.2rem 0.9rem; }
+    .ulist-item::before { left: calc(var(--node) / 2 - 0.5px); }
+    .ulist-date { grid-column: 2; grid-row: 1; text-align: left; padding-top: 0; }
+    .ulist-node { grid-column: 1; grid-row: 1 / span 2; margin-top: 0.3rem; }
+    .ulist-body { grid-column: 2; }
+  }
+</style>

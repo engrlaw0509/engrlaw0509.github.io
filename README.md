@@ -4,27 +4,31 @@ The marketing site for **LMI Automata Labs** — a Manila software studio.
 
 Live at <https://www.lmiautomatalabs.com>.
 
-Built with [Astro](https://astro.build) and hosted on **Railway** (project
+Built with [Astro](https://astro.build) 7 and hosted on **Railway** (project
 `lmi-automata-labs`, service `web`), which builds and deploys on every push to `main`.
-`railway.json` holds the build and start commands; `npm start` runs the same static
-server locally, so what Railway does is reproducible before it gets there.
+`railway.json` holds the build and start commands; `npm start` runs the same server
+locally, so what Railway does is reproducible before it gets there.
 
-Node is pinned to 22+ via `engines` — Railway otherwise picks Node 18, which is below
-what Astro 5 requires.
+Node is pinned to 22.12+ via `engines` — Astro 7 requires it, and Railway otherwise picks
+an older Node.
 
 ```bash
 npm install
-npm run dev      # http://localhost:4321
+npm run dev      # http://localhost:4321 — content and styling
 npm run build    # writes dist/
-npm run preview  # serve dist/ exactly as it will be deployed
+npm start        # the real server on dist/: /api/status and /api/enquiry work here
 ```
+
+`astro dev` has no `/api`, so live status pills and the enquiry form only work under
+`npm start` (after a build). **Restart `npm start` after every build** — the static server
+indexes `dist/` when it starts and will 404 on files built after that.
 
 ---
 
 ## Adding a project
 
-One project is one folder. Nothing outside it needs editing — the homepage, the
-`/work/` index and the project's own page all pick it up automatically.
+One project is one folder. Nothing outside it needs editing — the homepage, `/work/`, the
+changelog, the footer and the project's own page all pick it up automatically.
 
 ```
 src/content/projects/<slug>/
@@ -46,20 +50,65 @@ The fields that matter most:
 |---|---|
 | `summary` | The one line on the card. Say what it does for the owner, not how it works. |
 | `problem` / `outcome` | Shown as **Before** and **After**. This is the part prospects actually read. |
-| `status` | `production` or `building`. Drives the chip and which section of `/work/` it lands in. |
-| `featured` | Puts it on the homepage. |
+| `status` | `production` or `building`. Drives the pill and which section of `/work/` it lands in. |
+| `featured` | Puts it in the large cards on the homepage. The first featured project gets the wide card. |
 | `order` | Sorts everything. Lower first. |
 | `highlights` | Three or four short proof points. More than four wraps badly. |
+| `updates` | What shipped, newest first. Feeds the project page, the homepage log and `/changelog/`. |
+| `system` | The terminal panel: engineering facts, one per line, `ok` / `wip` / `info`. |
+| `site` / `host` | The public site ("Visit …") and the host shown in the screenshot's address bar. |
 
 Every gallery image needs `alt`. It is read aloud by screen readers and shown if the
 image fails, so describe what is in the picture rather than repeating the caption.
 
+A project with no `cover` still looks finished: its card and page show the `system`
+terminal instead of a screenshot. That is how Kaha appears.
+
 ### Writing the copy
 
 The site is written for business owners, not developers. Lead with the owner's problem
-and what changed; keep the technical detail to the `stack` list at the bottom. "Your
-Makati staff cannot see Ortigas's sales" beats "row-level security enforces tenant
-isolation" on this site, even though the second one is what makes the first true.
+and what changed; keep the technical detail to the `stack` list and the `system` panel.
+"Your Makati staff cannot see Ortigas's sales" beats "row-level security enforces tenant
+isolation" in the copy, even though the second one is what makes the first true.
+
+**Every number must be measured, counted or tested.** The homepage "Measured, not
+claimed" band (`stats` in `src/pages/index.astro`) names where each figure comes from.
+When one changes in its project, change it there too.
+
+### Updates and the changelog
+
+`updates` entries are dated days (`2026-09-24`) written for the person who uses the
+product: what they can now do, not what the code does. Leave out fixes, incidents and
+anything internal — "restored the purchases lost on the 19th" is a commit message, not a
+changelog entry. The homepage shows the newest **two per project**, so one busy product
+cannot fill the list.
+
+---
+
+## Live status
+
+The **"In production"** pill upgrades itself to **"Live now"**, with a pulsing dot, when
+that product's health check passes. The footer's **"All systems operational"** appears
+only when every checked product passes.
+
+`server.mjs` checks each product in `PROBES` (keyed by project id) at most once a minute,
+however many visitors ask, and answers `GET /api/status`:
+
+| Project | Health endpoint | What it proves |
+|---|---|---|
+| `sentro` | `https://app.mysentroapp.com/api/health` | The app answers **and** its database round-trips |
+| `croma-mnl` | `https://api.cromamnl.com/health` | Same, plus it reports its own DB latency |
+
+Two rules are deliberate:
+
+1. **Only a passing check changes the page.** A failing or unreachable check leaves the
+   build-time "In production" text alone. The site never announces an outage to a
+   prospect; it just stops claiming "Live now".
+2. **A product with no public health endpoint is not probed.** EA Builders has none, so
+   it keeps "In production". Add a line to `PROBES` when it does.
+
+Where there is no `/api` (the GitHub Pages mirror, `astro dev`) the fetch fails quietly
+and the pills keep their build-time text.
 
 ---
 
@@ -79,22 +128,21 @@ npm i --no-save puppeteer-core
 The same applies to `npm run og`. `npm run logo` only needs sharp and works as-is.
 
 ```bash
-node scripts/capture.mjs sentro     # that app's dev server must be running
-node scripts/capture.mjs            # everything configured
+node scripts/capture.mjs ea-builders   # that app's dev server must be running
+node scripts/capture.mjs               # everything configured
 ```
 
 Each app is configured in the `APPS` object at the top of that file — its dev server
-port, where to write, an optional login, and the list of pages to shoot. Add an entry to
-capture a new app.
+port, where to write, an optional login, and the list of pages to shoot.
 
 **Current state, and it is deliberate:**
 
 | Project | Screenshots | Why |
 |---|---|---|
-| Sentro | 4, captured | Its dev seed builds a synthetic book of business — every contact is marked `Demo` with an `@example.ph` address. Safe to publish. |
+| Sentro | 4, from Sentro's own set | Copied from `advisor-web/public/screens/` (captured 22–24 Sep 2026 against its **Northstar demo agency** — every name and amount invented). Its `portal` and `policies` shots are **left out on purpose**: they show real insurer and product names. Re-copy when Sentro re-shoots. |
 | EA Builders | 4, captured | Only via the built-in mock adapter — see the warning below. |
-| Croma MNL | 2 — supplied by hand | The operations dashboard came from a signed-in session (it is an Apps Script app behind a Google login, so `capture.mjs` cannot reach it). **Note: it shows real revenue figures, not seed data** — unlike every other shot on the site. |
-| Kaha | None | Its API needs a real Postgres and has no mock mode. The `kaha` entry in `capture.mjs` has the commands; uncomment its shots once a database is up. |
+| Croma MNL | 2 — supplied by hand | The operations dashboard is from a signed-in admin session at `app.cromamnl.com`. **It shows real revenue figures, not seed data** — unlike every other shot on the site. |
+| Kaha | None | Its API needs a real Postgres and has no mock mode, and there is no counter UI yet. The `system` terminal stands in. The `kaha` entry in `capture.mjs` has the commands. |
 
 ### EA Builders: start the dev server in demo mode
 
@@ -114,11 +162,72 @@ Two rules worth keeping:
 
 1. **Never publish a screenshot containing real customer or staff data.** Seed data
    only. Check before adding a shot, not after.
-2. **Watch for third-party trademarks.** The `/policies` screen in Sentro was dropped
-   because the seeded product names are real insurer trademarks, and showing them
-   implies a partnership that does not exist.
+2. **Watch for third-party trademarks.** Screens showing real insurer and product names
+   stay off this site — showing them implies a partnership that does not exist. MDRT,
+   Court of the Table and Top of the Table appear only with the disclaimer that they
+   are the Million Dollar Round Table's marks.
 
 Replacing any image is just dropping a better file over the old one and rebuilding.
+
+---
+
+## How it is built
+
+Everything here is progressive: a browser that lacks a feature gets the plain,
+fully working page.
+
+| Feature | How | Without it |
+|---|---|---|
+| Fonts | Geist and Geist Mono, fetched **at build time** by Astro's Fonts API and served from `/_astro/fonts/` with metric-matched fallbacks. No request to Google leaves a visitor's browser. | — |
+| Instant navigation | `prefetch` + `experimental.clientPrerender`: hovering a link **prerenders** the next page through the Speculation Rules API in Chromium, so the click is instant. | Ordinary prefetch, or a normal load |
+| Page transitions | Native cross-document view transitions (`@view-transition` in `global.css`). The screenshot on a card carries `view-transition-name: shot-<id>` and **morphs** into the project page's hero. | A normal page change |
+| Scroll reveals | CSS scroll-driven animations (`animation-timeline: view()`) inside `@supports`, so no script decides whether content appears. | Content is simply visible |
+| Theme | Dark by default; the header toggle switches to light, remembered in `localStorage`, applied by an inline head script **before first paint**. | Dark |
+| Mobile menu | A `<details>` element — opens and closes with no script. | — |
+| Caching | `/_astro/*` (content-hashed) is `immutable` for a year; pages revalidate by ETag. | — |
+
+A view-transition name must be **unique on a page** or the browser silently skips the
+whole transition. That is why the homepage hero's frame is unnamed — its Sentro
+screenshot also appears on a card.
+
+### CSS traps worth knowing
+
+- **`[hidden] { display: none !important; }` in `global.css` is load-bearing.** The
+  `hidden` attribute is only `display: none` in the UA stylesheet, so any author
+  `display` beats it. The contact form's success panel once shipped visible for exactly
+  this reason.
+- **A `.reveal` element cannot have its own hover `transform`.** The scroll animation
+  holds `transform` once it has played, silently overriding the hover. Put `.reveal` on
+  a wrapper (as the product cards do), or give hover feedback another way.
+- **Grids holding `nowrap` text need `grid-template-columns: minmax(0, 1fr)`.** The
+  implicit track grows to fit the text, pushes content past a phone screen, and
+  `overflow-x: clip` on `body` hides the cut-off instead of showing a scrollbar. The
+  hero's announcement pill did exactly this.
+- **Astro 7 drops whitespace that contains a line break next to an inline tag.**
+  `use.⏎<strong>Built` renders as `use.Built`. Keep the space and the tag on one line, or
+  write `{' '}`.
+
+---
+
+## Design
+
+Tokens live at the top of [`src/styles/global.css`](src/styles/global.css), defined
+**twice**: on bare `:root` (dark, the default) and under `:root[data-theme="light"]`.
+Change a colour in both, and never write one anywhere else — that is how a page ends up
+with one theme's ink on the other theme's ground.
+
+A few tokens are deliberately defined once and shared by both themes: the terminal panel
+(`--term-*`, dark in both, as a terminal is), thermal-receipt paper (`--paper-*`) and a
+window's traffic lights (`--dot-*`). `scripts/og-card.html` copies the dark tokens by
+hand, because a standalone file cannot import them.
+
+The palette is taken from the logo: sky `#38BDF8` carries interaction, cyan and indigo are
+decoration and glow only, and the brand gradient runs cyan → sky → indigo. Status colours
+are green for shipped and amber for in progress. Every text colour clears WCAG AA on
+every surface it sits on; `--ink-3` in particular is lighter than it looks like it
+should be, because the mono labels using it are 11px and get no large-text exemption.
+
+Type is Geist (display and body) and Geist Mono (labels, data, the terminal).
 
 ---
 
@@ -128,11 +237,9 @@ Replacing any image is just dropping a better file over the old one and rebuildi
 ([`server.mjs`](server.mjs)) at `POST /api/enquiry`, which sends through **Resend** — the
 same provider Sentro uses.
 
-That is the point: every other LMI project has a backend and sends its own mail (Sentro
-via Resend, EA Builders via its `/api/inquiry` route, Croma via Apps Script). This site was
-the only static one, so it had to borrow a third-party relay — which meant activation
-links, someone else's sending reputation, and spam folders. Now it posts same-origin: no
-CORS, no relay, no activation.
+Every other LMI project has a backend and sends its own mail (Sentro via Resend, EA
+Builders via its `/api/inquiry` route, Croma via its API). This one posts same-origin: no
+CORS, no third-party relay, no activation step.
 
 ### Required Railway variables
 
@@ -152,8 +259,8 @@ delivers to the Resend account's own address, so it is not a substitute here.
 
 Honeypot (accepted silently, so a bot learns nothing), a coarse per-IP throttle keyed on
 `x-real-ip` (the header that does not rotate behind Railway's proxy), required-field
-checks, and — borrowed from EA Builders' route — **it logs the full payload whenever
-sending fails**, so a lead is never silently lost.
+checks, and **it logs the full payload whenever sending fails**, so a lead is never
+silently lost.
 
 The browser checks both the status code and the `ok` flag before reporting success. An
 earlier version trusted the status code alone against a relay that answers 200 on
@@ -164,34 +271,6 @@ through Google instead.
 
 ---
 
-## A CSS trap worth knowing
-
-`global.css` carries `[hidden] { display: none !important; }` and it is load-bearing.
-
-The `hidden` attribute is only `display: none` in the **UA stylesheet**, so any author
-`display` declaration beats it. A `.btn` (`display: inline-flex`) or a grid container with
-`hidden` set stays fully visible while the DOM, and any script checking `el.hidden`,
-insists it is hidden. The contact form's success panel shipped visible for exactly this
-reason. Anything toggled with `hidden` depends on that rule.
-
-## Design
-
-Tokens live at the top of [`src/styles/global.css`](src/styles/global.css), defined three
-times: on bare `:root` for light, under `prefers-color-scheme: dark`, and under
-`[data-theme="dark"]`. **Change a colour in all three** or the page will only be right in
-one theme. Never write a colour anywhere else — that is how a page ends up with one
-theme's text on the other theme's background.
-
-The palette is a bookkeeper's ledger pad: pale columnar-green ground, blue-black ink,
-deep ledger blue for accents, ochre for in-progress status and green for shipped. Type is
-Archivo (display), Source Serif 4 (body) and IBM Plex Mono (labels).
-
-Every colour clears WCAG AA on both grounds. `--ink-3` in particular is darker than it
-looks like it should be, because the mono labels using it are 10–11px and get no
-large-text exemption.
-
----
-
 ## Domain and hosting
 
 `lmiautomatalabs.com`, registered at Namecheap. It is served from **two** places, and that
@@ -199,9 +278,13 @@ is deliberate:
 
 | Address | Served by | Role |
 |---|---|---|
-| `www.lmiautomatalabs.com` | **Railway** | **Canonical.** The real site. |
-| `lmiautomatalabs.com` | GitHub Pages | Same build, kept alive so the bare domain works |
+| `www.lmiautomatalabs.com` | **Railway** | **Canonical.** The real site, with `/api`. |
+| `lmiautomatalabs.com` | GitHub Pages | Same build; **redirects visitors to `www`** |
 | `engrlaw0509.github.io` | GitHub Pages | 301 to the apex |
+
+The apex redirect is a one-line inline script at the top of `Base.astro`'s `<head>`,
+because GitHub Pages cannot redirect a custom apex to a subdomain itself — and Pages has no
+`/api`, so the enquiry form and live status would not work there.
 
 **Why not put the apex on Railway?** Railway routes custom domains by CNAME, and a DNS zone
 apex cannot hold a CNAME — the apex must carry `SOA` and `NS`, and a CNAME may not coexist
@@ -226,6 +309,10 @@ Moving the apex to Railway later needs either Namecheap **PremiumDNS** (which do
 | CNAME | `www` | `4j96l1ma.up.railway.app` (Railway) |
 | TXT | `_railway-verify.www` | `railway-verify=2062aa…aec26` (Railway ownership) |
 
+All four A records are required — they are GitHub's four edge addresses, not
+alternatives. Namecheap writes `@` as the apex; do not type the domain name in the Host
+field.
+
 **Railway custom domains need that TXT record, and the Railway MCP does not mention it** —
 it reports only the CNAME. Always read the requirements from the CLI instead, which lists
 both:
@@ -249,43 +336,10 @@ Pushing to `main` deploys to both: Railway builds and serves `www`, and the GitH
 workflow publishes the apex. They build from the same commit, so they stay in step. If you
 ever move the apex to Railway, delete `.github/workflows/deploy.yml` and `public/CNAME`.
 
-### After a domain change
+### After a design or domain change
 
 Facebook and LinkedIn cache link previews hard. Force a re-fetch or old shares keep showing
-the previous state:
+the previous card:
 
 - Facebook — [Sharing Debugger](https://developers.facebook.com/tools/debug/) → **Scrape Again**
-- LinkedIn — [Post Inspector](https://www.linkedin.com/post-inspector/)
-
----|---|---|---|
-| A | `@` | `185.199.108.153` | Automatic |
-| A | `@` | `185.199.109.153` | Automatic |
-| A | `@` | `185.199.110.153` | Automatic |
-| A | `@` | `185.199.111.153` | Automatic |
-| CNAME | `www` | `engrlaw0509.github.io.` | Automatic |
-
-All four A records are required — they are GitHub's four edge addresses, not
-alternatives. Namecheap writes `@` as the apex; do not type the domain name in the Host
-field. The trailing dot on the CNAME value matters.
-
-Optional IPv6, same `@` host as AAAA records: `2606:50c0:8000::153`,
-`2606:50c0:8001::153`, `2606:50c0:8002::153`, `2606:50c0:8003::153`.
-
-Propagation is usually minutes, up to 24 hours. Check with:
-
-```bash
-nslookup lmiautomatalabs.com
-```
-
-Once it resolves to those addresses, GitHub issues a Let's Encrypt certificate
-automatically, and **Enforce HTTPS** becomes tickable in Settings → Pages. It stays
-greyed out until the certificate is issued, which is normal.
-
-### After the domain goes live
-
-Facebook and LinkedIn cache link previews hard. Force a re-fetch once, or old shares
-keep showing nothing:
-
-- Facebook — [Sharing Debugger](https://developers.facebook.com/tools/debug/), paste the
-  URL, **Scrape Again**
 - LinkedIn — [Post Inspector](https://www.linkedin.com/post-inspector/)

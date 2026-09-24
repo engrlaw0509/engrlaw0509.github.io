@@ -1,4 +1,5 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 /**
@@ -9,8 +10,8 @@ import { glob } from 'astro/loaders';
  *     cover.png         <- card and hero image
  *     01-something.png  <- gallery images, referenced from `gallery`
  *
- * Drop a folder in and the project appears on /work/ and gets its own page.
- * Nothing else needs editing.
+ * Drop a folder in and the project appears on the homepage, on /work/, in the
+ * changelog, and at its own page. Nothing else needs editing.
  */
 const projects = defineCollection({
   loader: glob({
@@ -40,6 +41,16 @@ const projects = defineCollection({
        */
       hero: z.boolean().default(false),
 
+      /** Public website, linked as "Visit site". Leave out if it has none. */
+      site: z.string().optional(),
+      /**
+       * What the address bar of the screenshot frame shows, e.g.
+       * "app.mysentroapp.com". Only use a host the screenshots really came from.
+       */
+      host: z.string().optional(),
+      /** The surfaces it ships as — "POS", "Client portal", "Android app". */
+      platforms: z.array(z.string()).default([]),
+
       /** The situation before. Plain language, no jargon. */
       problem: z.string(),
       /** What changed for them afterwards. */
@@ -52,6 +63,37 @@ const projects = defineCollection({
 
       /** What the owner can actually do. One plain sentence each. */
       features: z.array(z.object({ title: z.string(), body: z.string() })).default([]),
+
+      /**
+       * The terminal-style "system" panel: verifiable engineering facts, one
+       * line each. `ok` is shipped and working, `wip` is being built, `info` is
+       * neither. Every line must be true today — this is the part a technical
+       * reader checks.
+       */
+      system: z
+        .array(
+          z.object({
+            key: z.string(),
+            value: z.string(),
+            state: z.enum(['ok', 'wip', 'info']).default('info'),
+          }),
+        )
+        .default([]),
+
+      /**
+       * What shipped, newest first. Feeds this project's page, the homepage
+       * "Shipping log" and /changelog/. Write it for the owner, not the commit
+       * log: what they can now do, not what the code does.
+       */
+      updates: z
+        .array(
+          z.object({
+            date: z.coerce.date(),
+            title: z.string(),
+            body: z.string().optional(),
+          }),
+        )
+        .default([]),
 
       /** Named plainly; the detail page lists these small and last. */
       stack: z.array(z.string()).default([]),

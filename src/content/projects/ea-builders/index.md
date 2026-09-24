@@ -4,6 +4,10 @@ sector: Construction & design-build
 status: production
 order: 3
 featured: true
+platforms:
+  - Admin panel
+  - Client portal
+  - Staff sign-in
 
 summary: >-
   The system a builder runs projects on — schedule, site crew, attendance, payroll and
@@ -32,8 +36,8 @@ highlights:
 features:
   - title: See every project at once
     body: >-
-      Projects grouped by stage, with a schedule that shows which task is actually
-      holding the completion date rather than just listing everything.
+      Projects grouped by stage, with a critical-path schedule that shows which task is
+      actually holding the completion date rather than just listing everything.
   - title: Attendance becomes payroll
     body: >-
       The crew is marked present on site and that fills the pay run directly. Casual
@@ -47,15 +51,55 @@ features:
     body: >-
       Each project reports its own profitability as costs land — while there is still
       time to do something about it, rather than at the end.
+  - title: Contracts from a template
+    body: >-
+      A document library in the admin panel, with the four legal drafts a job needs written
+      in proper Philippine legal form, ready to fill in for each client.
   - title: Clients stop ringing for updates
     body: >-
       They sign in to their own project and see the timeline, site photographs, documents
-      and the payment schedule.
+      and the payment schedule — and can ask a question in a thread that stays with the job.
+
+system:
+  - key: scheduling
+    value: Critical path across every project
+    state: ok
+  - key: payroll
+    value: Site attendance → pay run → payslips, 6 per page
+    state: ok
+  - key: inventory
+    value: Catalogue, site stock and plant, with where-used
+    state: ok
+  - key: access
+    value: Owner, engineer and staff roles · per-person sign-in codes
+    state: ok
+  - key: portal
+    value: Clients in by magic link · two-way enquiry threads
+    state: ok
+
+updates:
+  - date: 2026-08-08
+    title: Attendance logged on site fills the pay run
+  - date: 2026-08-08
+    title: Project profitability — is this job making money, and will it still be
+  - date: 2026-08-08
+    title: A company materials catalogue, site inventory, and where each item is in use
+  - date: 2026-08-08
+    title: A whole period's payslips, printed six to a page
+  - date: 2026-08-07
+    title: A critical-path scheduler, with projects grouped by pipeline stage
+  - date: 2026-08-05
+    title: A document-templates library, with the four legal drafts in Philippine legal form
+  - date: 2026-07-29
+    title: Two-way enquiry threads with clients, through a magic link
+  - date: 2026-07-27
+    title: Capability-based roles, and full project management inside the admin
 
 stack:
   - Next.js
   - TypeScript
   - Tailwind CSS
+  - Apps Script
 
 cover: ./cover.png
 gallery:
@@ -84,3 +128,6 @@ paper at the site, in a spreadsheet that evening, and again in payroll at the en
 period. Fixing that one chain meant the roster, the projects and the pay run all had to
 know about each other, and once they did, the rest — materials, plant, project
 profitability, the client portal — followed naturally from the same information.
+
+The screens shown here run on the system's built-in demo data, so no real employee or
+client appears in them.

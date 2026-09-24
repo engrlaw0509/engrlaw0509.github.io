@@ -8,87 +8,122 @@
 
   Rendered at exactly 1200x630 (the size every platform crops to) by:
       npm run og
+
+  Its colours copy the dark theme's tokens in src/styles/global.css. It is a
+  standalone file rendered by a headless browser, so it cannot import them —
+  change both together.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..800&family=Geist+Mono:wght@400;500&display=swap">
 <style>
   * { box-sizing: border-box; margin: 0; }
   html, body { width: 1200px; height: 630px; }
   body {
     position: relative;
-    background: #FFFFFF;
-    color: #0C1E33;
-    font-family: "Plus Jakarta Sans", Arial, sans-serif;
-    padding: 4.5rem 5rem;
+    background: #05080F;
+    color: #EEF3FA;
+    font-family: "Geist", Arial, sans-serif;
+    padding: 3.6rem 4.4rem 3.4rem;
     display: grid;
     align-content: space-between;
     overflow: hidden;
   }
-  /* soft accent wash, matching the site hero */
+  /* The site's grid, masked to a soft ellipse. */
   body::before {
     content: "";
     position: absolute;
-    inset: -14rem 0 auto;
-    height: 34rem;
-    background: radial-gradient(60% 60% at 50% 50%, rgba(0,180,216,.17), transparent 70%);
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgba(148,170,205,.09) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148,170,205,.09) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 80% at 60% 30%, #000 25%, transparent 75%);
   }
-
-  .top { position: relative; display: flex; align-items: center; gap: 1rem; }
-  .mark { width: 4.6rem; height: 4.6rem; border-radius: 1rem; background: #fff; border: 1px solid #DBE6EF; }
-  .brand {
-    font-family: "Sora", sans-serif;
-    font-weight: 700;
-    font-size: 1.85rem;
-    letter-spacing: -.025em;
+  /* And its two glows. */
+  body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(40% 55% at 22% 10%, rgba(34,211,238,.20), transparent 70%),
+      radial-gradient(38% 55% at 82% 18%, rgba(99,102,241,.24), transparent 70%);
   }
+  .top, .mid, .bottom { position: relative; z-index: 1; }
 
-  .mid { position: relative; }
+  .top { display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 1rem; }
+  .mark { height: 3.2rem; width: auto; }
+  .name { font-weight: 650; font-size: 1.7rem; letter-spacing: -.03em; }
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    font-family: "Geist Mono", monospace;
+    font-size: .95rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #34D399;
+    padding: .55rem 1rem .55rem .85rem;
+    border-radius: 999px;
+    background: rgba(52,211,153,.10);
+    border: 1px solid rgba(52,211,153,.32);
+  }
+  .live i { width: .6rem; height: .6rem; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 5px rgba(52,211,153,.18); }
+
   h1 {
-    font-family: "Sora", sans-serif;
-    font-weight: 800;
-    font-size: 4.4rem;
-    line-height: 1.02;
-    letter-spacing: -.045em;
-    max-width: 20ch;
+    display: grid;
+    font-weight: 700;
+    font-size: 7.4rem;
+    line-height: .95;
+    letter-spacing: -.055em;
   }
-  h1 em { font-style: normal; color: #145C94; }
+  .fade {
+    background: linear-gradient(180deg, #EEF3FA 35%, #9DA8B9 100%);
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+  .grad {
+    background: linear-gradient(115deg, #22D3EE 0%, #38BDF8 42%, #818CF8 100%);
+    -webkit-background-clip: text;
+    color: transparent;
+    padding-bottom: .08em;
+  }
+  .sub { margin-top: 1.1rem; font-size: 1.55rem; color: #A8B5C8; letter-spacing: -.01em; }
 
   .bottom {
-    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
-    border-top: 1px solid #DBE6EF;
-    padding-top: 1.35rem;
+    padding-top: 1.3rem;
+    border-top: 1px solid rgba(148,170,205,.18);
   }
-  .tags { display: flex; gap: .5rem; }
+  .tags { display: flex; gap: .55rem; }
   .tags span {
-    font-family: "JetBrains Mono", monospace;
-    font-size: .8125rem;
-    color: #41576F;
-    background: #EAF2F8;
-    border-radius: .4rem;
-    padding: .38rem .6rem;
+    font-family: "Geist Mono", monospace;
+    font-size: .95rem;
+    color: #A8B5C8;
+    background: #0B1220;
+    border: 1px solid rgba(148,170,205,.2);
+    border-radius: .5rem;
+    padding: .45rem .75rem;
   }
-  .place {
-    font-family: "JetBrains Mono", monospace;
-    font-size: .8125rem;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: #5A7288;
-  }
+  .url { font-family: "Geist Mono", monospace; font-size: 1.05rem; color: #7DD3FC; }
 </style>
 </head>
 <body>
   <div class="top">
-    <img class="mark" src="../public/brand/mark-180.png" alt="">
-    <span class="brand">LMI Automata Labs</span>
+    <div class="brand">
+      <img class="mark" src="../public/brand/mark-wide-light.png" alt="">
+      <span class="name">LMI Automata Labs</span>
+    </div>
+    <span class="live"><i></i>3 products live</span>
   </div>
 
   <div class="mid">
-    <h1>Automate your&nbsp;<em>business</em>.</h1>
+    <h1><span class="fade">Automate your</span><span class="grad">business.</span></h1>
+    <p class="sub">Software and automation for Philippine businesses.</p>
   </div>
 
   <div class="bottom">
@@ -97,8 +132,9 @@
       <span>Payroll</span>
       <span>Client portals</span>
       <span>Integrations</span>
+      <span>AI automation</span>
     </div>
-    <span class="place">Metro Manila &middot; PH</span>
+    <span class="url">lmiautomatalabs.com</span>
   </div>
 </body>
 </html>

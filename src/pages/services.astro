@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
 import ServiceDiagram from '../components/ServiceDiagram.astro';
 
 const steps = [
@@ -20,50 +21,69 @@ const steps = [
     body: 'Old and new run side by side until the numbers agree. Nobody closes for a day to switch systems.',
   },
 ];
+
+/* How the products on this site are actually built — each line is true of
+   the work shown under Products, not an aspiration. */
+const principles = [
+  {
+    k: 'Measured',
+    title: 'Fast, and we can prove it',
+    body: 'Response times are measured from Manila against the live system, not guessed. Croma MNL answers in a median of 45 ms.',
+  },
+  {
+    k: 'Isolated',
+    title: 'One customer can never see another',
+    body: 'Where several businesses share one system, the wall between them is designed in from the first table and tested before anything is released.',
+  },
+  {
+    k: 'Recoverable',
+    title: 'Backed up, and the backup works',
+    body: 'Nightly off-site copies, and a restore that is actually rehearsed — because a backup nobody has tried is only a hope.',
+  },
+  {
+    k: 'Local',
+    title: 'Built for how business works here',
+    body: 'BIR-style invoices, VAT to the centavo, SSS, PhilHealth and Pag-IBIG, GCash and Maya, middle names and 09XX numbers.',
+  },
+];
 ---
 
 <Base
   title="Services"
   description="Integration, automation, data migration and custom software for Philippine businesses — from LMI Automata Labs in Metro Manila."
 >
-  <section class="page-head">
-    <div class="wrap head-inner">
-      <p class="eyebrow">What we do</p>
-      <h1 class="h-xl head-title">Four ways this usually starts.</h1>
-      <p class="lede">
-        Not every problem needs new software. Often the fastest fix is connecting what you
-        already own, or taking one manual job off someone&rsquo;s desk. Here is the range,
-        cheapest first.
-      </p>
-    </div>
-  </section>
+  <PageHead
+    eyebrow="What we do"
+    title="Four ways this usually starts."
+    lede="Not every problem needs new software. Often the fastest fix is connecting what you already own, or taking one manual job off someone's desk. Here is the range, cheapest first."
+  />
 
-  <section class="section">
+  <section class="section diagram-section">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <p class="eyebrow">How it fits together</p>
-        <h2 class="h-lg">Pick the one that sounds like your problem</h2>
+        <h2 class="h-lg ink-fade">Pick the one that sounds like your problem</h2>
         <p class="lede">
-          Each of these takes something you already have and gives you something
-          back. Tap through them to see which parts of your setup it touches.
+          Each of these takes something you already have and gives you something back.
+          Tap through them to see which parts of your setup it touches.
         </p>
       </div>
-      <ServiceDiagram />
+      <div class="reveal"><ServiceDiagram /></div>
     </div>
   </section>
 
-  <section class="section section-tint">
+  <section class="section section-alt">
     <div class="wrap">
-      <div class="section-head">
+      <div class="section-head reveal">
         <p class="eyebrow">How it goes</p>
-        <h2 class="h-lg">Working together, step by step</h2>
+        <h2 class="h-lg ink-fade">Working together, step by step</h2>
       </div>
       <ol class="steps">
         {steps.map((step, i) => (
-          <li class="step">
+          <li class="step reveal">
             <span class="step-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             <div class="step-body">
-              <h3 class="h-md step-title">{step.title}</h3>
+              <h3 class="step-title">{step.title}</h3>
               <p class="muted">{step.body}</p>
             </div>
           </li>
@@ -74,67 +94,134 @@ const steps = [
 
   <section class="section">
     <div class="wrap">
-      <div class="cta">
-        <h2 class="h-lg">Not sure which of these you need?</h2>
+      <div class="section-head reveal">
+        <p class="eyebrow">Engineering standards</p>
+        <h2 class="h-lg ink-fade">The standard the work is held to</h2>
+      </div>
+      <div class="principles">
+        {principles.map((p) => (
+          <article class="principle edge spot reveal">
+            <span class="principle-k">{p.k}</span>
+            <h3 class="principle-title">{p.title}</h3>
+            <p class="muted">{p.body}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta-section">
+    <div class="wrap">
+      <div class="cta edge reveal">
+        <div class="bg-grid" aria-hidden="true"></div>
+        <h2 class="h-lg ink-fade">Not sure which of these you need?</h2>
         <p class="lede cta-lede">
           That is normal, and it is our job to work out. Describe the part of the week that
-          goes wrong and we will tell you which one it is — or that it is none of them.
+          goes wrong and we will tell you which one it is &mdash; or that it is none of them.
         </p>
-        <a class="btn" href="/contact/">Start a conversation</a>
+        <a class="btn" href="/contact/">Start a project</a>
       </div>
     </div>
   </section>
 </Base>
 
 <style>
-  .page-head { padding-block: clamp(2.5rem, 6vw, 4.5rem) 0; }
-  .head-inner { display: grid; gap: 1.1rem; }
-  .head-title { max-width: 20ch; }
+  .diagram-section { padding-top: clamp(2.5rem, 5vw, 4rem); }
 
-  
-  
-  
-  
-
+  /* ---------------- steps ---------------- */
   .steps {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    gap: 1.25rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
-    counter-reset: none;
+    gap: 1rem;
+    position: relative;
+  }
+  @media (min-width: 64rem) {
+    .steps { grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+    /* One rail through every number, drawn once behind the row. */
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 2.35rem;
+      left: 2.5rem;
+      right: 2.5rem;
+      height: 1px;
+      background: linear-gradient(to right, var(--accent), var(--accent-3), transparent);
+      opacity: 0.6;
+    }
   }
   .step {
+    position: relative;
     display: grid;
-    gap: 0.7rem;
+    gap: 1rem;
     align-content: start;
+    padding: clamp(1.25rem, 2.5vw, 1.6rem);
+    border-radius: var(--r-xl);
     background: var(--surface);
     border: 1px solid var(--line);
-    border-radius: var(--r-lg);
-    padding: clamp(1.25rem, 2.5vw, 1.6rem);
   }
   .step-n {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
     font-family: var(--f-mono);
     font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.1em;
-    color: var(--accent);
+    color: var(--on-accent);
+    background: var(--grad);
+    box-shadow: 0 0 0 5px var(--surface), 0 8px 22px -8px var(--glow);
   }
-  .step-body { display: grid; gap: 0.4rem; }
-  .step-title { font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.1875rem); }
+  .step-body { display: grid; gap: 0.45rem; }
+  .step-title { font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.1875rem); font-weight: 650; letter-spacing: -0.025em; }
 
+  /* ---------------- principles ---------------- */
+  .principles {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+  .principle {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: clamp(1.35rem, 2.5vw, 1.75rem);
+    border-radius: var(--r-xl);
+  }
+  .principle-k {
+    justify-self: start;
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--r-pill);
+    background: var(--accent-wash);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+  .principle-title { font-size: 1.125rem; font-weight: 650; letter-spacing: -0.025em; }
+
+  /* ---------------- cta ---------------- */
+  .cta-section { padding-top: 0; }
   .cta {
+    position: relative;
+    isolation: isolate;
     display: grid;
     justify-items: center;
     text-align: center;
     gap: 1.1rem;
-    padding: clamp(2.5rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3rem);
-    background:
-      radial-gradient(90% 120% at 50% 0%, var(--accent-wash), transparent 70%),
-      var(--bg-tint);
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
+    padding: clamp(2.75rem, 6vw, 4.5rem) clamp(1.25rem, 4vw, 3rem);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .cta > .bg-grid {
+    z-index: -1;
+    -webkit-mask-image: radial-gradient(ellipse 60% 80% at 50% 100%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 60% 80% at 50% 100%, #000 20%, transparent 75%);
   }
   .cta-lede { max-width: 54ch; }
 </style>

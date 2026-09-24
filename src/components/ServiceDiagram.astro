@@ -84,6 +84,7 @@ const services = [
     {services.map((s) => (
       <div class:list={['view', `view-${s.id}`]}>
         <div class="stage">
+          <div class="bg-grid stage-grid" aria-hidden="true"></div>
           <div class="col">
             <span class="col-h">What you have now</span>
             <ul class="nodes">
@@ -94,10 +95,8 @@ const services = [
           <div class="wire" aria-hidden="true"><span class="dot"></span></div>
 
           <div class="hub">
-            <picture>
-              <source srcset="/brand/mark-wide-light.png" media="(prefers-color-scheme: dark)" />
-              <img src="/brand/mark-wide.png" alt="" width="229" height="160" loading="lazy" />
-            </picture>
+            <span class="hub-ring" aria-hidden="true"></span>
+            <span class="hub-mark" aria-hidden="true"></span>
             <span class="hub-l">{s.tab}</span>
           </div>
 
@@ -135,14 +134,22 @@ const services = [
   /* ---------------- tabs ---------------- */
   /* Four pills do not fit one phone row, and letting them wrap freely left a
      ragged right edge. An even two-column grid below 40rem keeps every row
-     flush; above that they go back to natural-width pills. */
+     flush; above that they sit in one segmented control. */
   .tabs {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
   }
   @media (min-width: 40rem) {
-    .tabs { display: flex; flex-wrap: wrap; }
+    .tabs {
+      display: inline-flex;
+      justify-self: start;
+      gap: 0.25rem;
+      padding: 0.3rem;
+      border-radius: var(--r-pill);
+      background: var(--surface);
+      border: 1px solid var(--line);
+    }
   }
   .tab {
     cursor: pointer;
@@ -150,18 +157,22 @@ const services = [
     text-align: center;
     font-weight: 600;
     font-size: 0.9375rem;
-    padding: 0.6rem 1.05rem;
+    padding: 0.6rem 1.1rem;
     border-radius: var(--r-pill);
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--ink-2);
     transition:
-      border-color 170ms cubic-bezier(.2, .6, .2, 1),
-      color 170ms cubic-bezier(.2, .6, .2, 1),
-      background-color 170ms cubic-bezier(.2, .6, .2, 1),
-      transform 110ms cubic-bezier(.2, .6, .2, 1);
+      border-color 170ms var(--ease),
+      color 170ms var(--ease),
+      background-color 170ms var(--ease),
+      box-shadow 170ms var(--ease),
+      transform 110ms var(--ease);
   }
-  .tab:hover { color: var(--ink); border-color: var(--ink-3); }
+  @media (min-width: 40rem) {
+    .tab { border-color: transparent; background: transparent; }
+  }
+  .tab:hover { color: var(--ink); }
   .tab:active { transform: scale(0.97); }
 
   /* ---------------- views ---------------- */
@@ -173,9 +184,10 @@ const services = [
   #svc-automation:checked  ~ .tabs .tab[for='svc-automation'],
   #svc-migration:checked   ~ .tabs .tab[for='svc-migration'],
   #svc-custom:checked      ~ .tabs .tab[for='svc-custom'] {
-    background: var(--accent);
-    border-color: var(--accent);
+    background: var(--grad);
+    border-color: transparent;
     color: var(--on-accent);
+    box-shadow: 0 8px 22px -10px var(--glow);
   }
   #svc-integration:checked ~ .views .view-integration,
   #svc-automation:checked  ~ .views .view-automation,
@@ -186,7 +198,7 @@ const services = [
     /* `display` cannot be transitioned, so the incoming panel animates instead.
        Deliberately no fill-mode: if the animation never runs the panel is simply
        visible, rather than stuck at opacity 0. */
-    animation: view-in 300ms cubic-bezier(.2, .6, .2, 1);
+    animation: view-in 320ms var(--ease);
   }
 
   @keyframes view-in {
@@ -201,7 +213,6 @@ const services = [
     .tab:active { transform: none; }
   }
   /* Visible focus ring on the active tab when driven by keyboard. */
-  .picker:focus-visible ~ .tabs .tab[for] { outline: none; }
   #svc-integration:focus-visible ~ .tabs .tab[for='svc-integration'],
   #svc-automation:focus-visible  ~ .tabs .tab[for='svc-automation'],
   #svc-migration:focus-visible   ~ .tabs .tab[for='svc-migration'],
@@ -212,15 +223,23 @@ const services = [
 
   /* ---------------- stage ---------------- */
   .stage {
+    position: relative;
+    isolation: isolate;
     display: grid;
     gap: 1.25rem;
     align-items: center;
-    padding: clamp(1.25rem, 3vw, 2.25rem);
+    padding: clamp(1.25rem, 3.5vw, 2.75rem);
     background:
-      radial-gradient(80% 120% at 50% 0%, var(--accent-wash), transparent 70%),
+      radial-gradient(70% 90% at 50% 50%, var(--glow-a), transparent 70%),
       var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .stage-grid {
+    z-index: -1;
+    -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, #000 20%, transparent 80%);
+    mask-image: radial-gradient(ellipse 60% 70% at 50% 50%, #000 20%, transparent 80%);
   }
   @media (min-width: 60rem) {
     .stage { grid-template-columns: 1fr auto auto auto 1fr; gap: 0 1.25rem; }
@@ -239,24 +258,27 @@ const services = [
   .node {
     font-size: 0.9375rem;
     font-weight: 500;
-    padding: 0.6rem 0.85rem;
+    padding: 0.65rem 0.9rem;
     border-radius: var(--r);
     border: 1px solid var(--line);
-    background: var(--bg);
+    background: var(--bg-2);
     color: var(--ink-2);
   }
   .node.is-out {
-    border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+    background: color-mix(in srgb, var(--accent) 8%, var(--bg-2));
     color: var(--ink);
     font-weight: 600;
   }
 
-  /* The connector, echoing the circuit traces in the mark. */
+  /* The connector, echoing the circuit traces in the mark. A packet runs
+     along it so the direction of the work is obvious. */
   .wire {
     position: relative;
     display: grid;
     place-items: center;
-    min-height: 2.5rem;
+    min-height: 3rem;
+    overflow: hidden;
   }
   .wire::before {
     content: '';
@@ -266,32 +288,73 @@ const services = [
     background: linear-gradient(to bottom, transparent, var(--cyan), transparent);
   }
   .wire .dot {
+    position: absolute;
+    top: 0;
     width: 0.5rem; height: 0.5rem;
     border-radius: 50%;
     background: var(--cyan);
-    position: relative;
+    box-shadow: 0 0 10px 2px var(--cyan);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .wire .dot { animation: travel-y 1.8s var(--ease) infinite; }
+  }
+  @keyframes travel-y {
+    from { transform: translateY(-0.5rem); opacity: 0; }
+    30%  { opacity: 1; }
+    to   { transform: translateY(3rem); opacity: 0; }
   }
   @media (min-width: 60rem) {
-    .wire { min-height: 0; width: 4.5rem; }
+    .wire { min-height: 0; height: 2rem; width: 5rem; }
     .wire::before {
       inset: auto 0;
       width: auto; height: 2px;
       background: linear-gradient(to right, transparent, var(--cyan), transparent);
     }
+    .wire .dot { top: auto; left: 0; }
+    @media (prefers-reduced-motion: no-preference) {
+      .wire .dot { animation-name: travel-x; }
+    }
+  }
+  @keyframes travel-x {
+    from { transform: translateX(-0.5rem); opacity: 0; }
+    30%  { opacity: 1; }
+    to   { transform: translateX(5rem); opacity: 0; }
   }
 
   /* ---------------- hub ---------------- */
   .hub {
+    position: relative;
     display: grid;
     justify-items: center;
-    gap: 0.5rem;
-    padding: 1rem 1.25rem;
-    border-radius: var(--r-lg);
-    border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+    gap: 0.55rem;
+    padding: 1.1rem 1.35rem;
+    border-radius: var(--r-xl);
+    border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
     background: var(--bg);
-    box-shadow: var(--shadow);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 7%, transparent), 0 20px 60px -20px var(--glow);
+    justify-self: center;
   }
-  .hub img { height: 44px; width: auto; }
+  .hub-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: calc(var(--r-xl) + 6px);
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .hub-ring { animation: breathe 2.8s ease-in-out infinite; }
+  }
+  @keyframes breathe {
+    50% { transform: scale(1.06); opacity: 0.3; }
+  }
+  /* A background, not an <img>, so it follows the site theme rather than the
+     OS one. */
+  .hub-mark {
+    width: 64px;
+    height: 44px;
+    background: url('/brand/mark-wide-light.png') center / contain no-repeat;
+  }
+  :global([data-theme='light']) .hub-mark { background-image: url('/brand/mark-wide.png'); }
   .hub-l {
     font-family: var(--f-mono);
     font-size: 0.6875rem;

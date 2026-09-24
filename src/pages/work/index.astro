@@ -1,51 +1,45 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import PageHead from '../../components/PageHead.astro';
 import ProjectCard from '../../components/ProjectCard.astro';
+import { getProjects } from '../../lib/projects';
 
-const projects = (await getCollection('projects')).sort(
-  (a, b) => a.data.order - b.data.order,
-);
+const projects = await getProjects();
 const live = projects.filter((p) => p.data.status === 'production');
 const building = projects.filter((p) => p.data.status === 'building');
 ---
 
 <Base
-  title="Work"
-  description="Point of sale, practice management and construction management — software LMI Automata Labs has built for businesses in the Philippines."
+  title="Products"
+  description="Point of sale, practice management and construction management — the software LMI Automata Labs has built for businesses in the Philippines, and what each one changed."
 >
-  <section class="page-head">
-    <div class="wrap head-inner">
-      <p class="eyebrow">{projects.length} projects</p>
-      <h1 class="h-xl head-title">Systems running real businesses.</h1>
-      <p class="lede">
-        Each of these replaced a spreadsheet, a paper book, or a stack of apps that never
-        spoke to each other. Open one to see the screens and what changed for the owner.
-      </p>
-    </div>
-  </section>
+  <PageHead
+    eyebrow={`${projects.length} products`}
+    title="Systems running real businesses."
+    lede="Each of these replaced a spreadsheet, a paper book, or a stack of apps that never spoke to each other. Open one to see the screens, the engineering, and what changed for the owner."
+  />
 
-  <section class="section">
+  <section class="section group">
     <div class="wrap">
-      <div class="group-head">
+      <div class="group-head reveal">
         <h2 class="h-md">In production</h2>
         <span class="group-count">{live.length}</span>
       </div>
       <div class="grid">
-        {live.map((project) => <ProjectCard project={project} />)}
+        {live.map((project) => <div class="reveal"><ProjectCard project={project} /></div>)}
       </div>
     </div>
   </section>
 
   {building.length > 0 && (
-    <section class="section section-tint">
+    <section class="section section-alt group">
       <div class="wrap">
-        <div class="group-head">
+        <div class="group-head reveal">
           <h2 class="h-md">In development</h2>
           <span class="group-count">{building.length}</span>
         </div>
         <div class="grid">
-          {building.map((project) => <ProjectCard project={project} />)}
+          {building.map((project) => <div class="reveal"><ProjectCard project={project} /></div>)}
         </div>
       </div>
     </section>
@@ -53,54 +47,58 @@ const building = projects.filter((p) => p.data.status === 'building');
 
   <section class="section">
     <div class="wrap">
-      <div class="cta">
-        <h2 class="h-lg">Something similar in your business?</h2>
+      <div class="cta edge reveal">
+        <div class="bg-grid" aria-hidden="true"></div>
+        <h2 class="h-lg ink-fade">Something similar in your business?</h2>
         <p class="lede cta-lede">
           Most of these started as one person saying the same task was eating their week.
         </p>
-        <a class="btn" href="/contact/">Start a conversation</a>
+        <a class="btn" href="/contact/">Start a project</a>
       </div>
     </div>
   </section>
 </Base>
 
 <style>
-  .page-head { padding-block: clamp(2.5rem, 6vw, 4.5rem) 0; }
-  .head-inner { display: grid; gap: 1.1rem; }
-  .head-title { max-width: 20ch; }
-
+  .group { padding-top: clamp(2.5rem, 5vw, 4rem); }
   .group-head {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
   }
   .group-count {
     font-family: var(--f-mono);
     font-size: 0.75rem;
     color: var(--ink-3);
     background: var(--surface-2);
+    border: 1px solid var(--line);
     border-radius: var(--r-pill);
-    padding: 0.15rem 0.55rem;
+    padding: 0.15rem 0.6rem;
   }
 
   .grid {
     display: grid;
-    gap: clamp(2.25rem, 4.5vw, 3rem) 2rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+    gap: clamp(1.25rem, 2.5vw, 1.75rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
   }
+  .grid :global(.pcard) { height: 100%; }
 
   .cta {
+    position: relative;
+    isolation: isolate;
     display: grid;
     justify-items: center;
     text-align: center;
     gap: 1.1rem;
-    padding: clamp(2.5rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3rem);
-    background:
-      radial-gradient(90% 120% at 50% 0%, var(--accent-wash), transparent 70%),
-      var(--bg-tint);
-    border: 1px solid var(--line);
-    border-radius: var(--r-lg);
+    padding: clamp(2.75rem, 6vw, 4.5rem) clamp(1.25rem, 4vw, 3rem);
+    border-radius: var(--r-xl);
+    overflow: hidden;
+  }
+  .cta > .bg-grid {
+    z-index: -1;
+    -webkit-mask-image: radial-gradient(ellipse 60% 80% at 50% 100%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(ellipse 60% 80% at 50% 100%, #000 20%, transparent 75%);
   }
   .cta-lede { max-width: 50ch; }
 </style>

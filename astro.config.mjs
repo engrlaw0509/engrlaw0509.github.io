@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
@@ -24,4 +24,32 @@ export default defineConfig({
     responsiveStyles: true,
     layout: 'constrained',
   },
+
+  // Fonts are fetched once at BUILD time and served from this origin, with
+  // metric-matched fallbacks so text does not jump when they arrive. No request
+  // to Google leaves a visitor's browser.
+  fonts: [
+    {
+      provider: fontProviders.google(),
+      name: 'Geist',
+      cssVariable: '--font-geist',
+      weights: ['400 800'],
+      subsets: ['latin'],
+      fallbacks: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+    },
+    {
+      provider: fontProviders.google(),
+      name: 'Geist Mono',
+      cssVariable: '--font-geist-mono',
+      weights: [400, 500],
+      subsets: ['latin'],
+      fallbacks: ['ui-monospace', 'monospace'],
+    },
+  ],
+
+  // Hovering a link fetches the next page before the click. In Chromium the
+  // page is fully prerendered through the Speculation Rules API, so the click
+  // is instant; elsewhere it falls back to an ordinary prefetch.
+  prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+  experimental: { clientPrerender: true },
 });

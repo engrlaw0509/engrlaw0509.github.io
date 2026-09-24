@@ -16,8 +16,12 @@
  *
  * With no RESEND_API_KEY the enquiry is logged instead of sent and the caller is
  * told plainly, rather than the visitor being shown a success they did not get.
+ *
+ * It also answers GET /api/status: a health check of each live product, cached
+ * for a minute, which the pages use to upgrade "In production" to "Live now".
  */
 import { createServer } from 'node:http';
+import { existsSync, readFileSync } from 'node:fs';
 import sirv from 'sirv';
 
 const PORT = Number(process.env.PORT) || 4321;
@@ -38,7 +42,92 @@ const FIELDS = [
   ['outcome', 'What good looks like'],
 ];
 
-const assets = sirv('dist', { etag: true, gzip: true, brotli: true, dev: false });
+/**
+ * Everything under /_astro/ has a content hash in its name, so it can be cached
+ * for a year and never revalidated. Pages cannot: an HTML file keeps its name
+ * across deploys, so it must be revalidated (cheaply — the ETag makes an
+ * unchanged page a 304).
+ */
+const assets = sirv('dist', {
+  etag: true,
+  gzip: true,
+  brotli: true,
+  dev: false,
+  setHeaders(res, pathname) {
+    res.setHeader(
+      'Cache-Control',
+      pathname.startsWith('/_astro/')
+        ? 'public, max-age=31536000, immutable'
+        : 'public, max-age=0, must-revalidate',
+    );
+  },
+});
+
+/** The branded page Astro builds from src/pages/404.astro, read once. */
+const NOT_FOUND = existsSync('dist/404.html') ? readFileSync('dist/404.html') : null;
+
+/** Sent with every response. Nothing here needs to be framed or sniffed. */
+const SECURITY_HEADERS = {
+  'Strict-Transport-Security': 'max-age=31536000',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+};
+
+/**
+ * Live products and the public health endpoint each already exposes. Keys are
+ * project ids — the folder names under src/content/projects/ — so the page
+ * knows which status pill a result belongs to.
+ *
+ * Both endpoints check their database, not just that the process is up.
+ * Add a project here to give its pill a live check; leave one out and it simply
+ * keeps its build-time "In production".
+ */
+const PROBES = {
+  sentro: 'https://app.mysentroapp.com/api/health',
+  'croma-mnl': 'https://api.cromamnl.com/health',
+};
+const STATUS_TTL_MS = 60_000;
+const PROBE_TIMEOUT_MS = 5_000;
+
+async function probe(url) {
+  try {
+    const r = await fetch(url, {
+      headers: { 'user-agent': 'lmiautomatalabs-status/1', accept: 'application/json' },
+      signal: AbortSignal.timeout(PROBE_TIMEOUT_MS),
+    });
+    let body = null;
+    try { body = await r.json(); } catch { /* not JSON; the status code decides */ }
+    // A 200 that says it is unwell is unwell.
+    const saysDown = body && (body.ok === false || body.status === 'error' || body.db === 'down');
+    return r.ok && !saysDown;
+  } catch {
+    return false;
+  }
+}
+
+let statusCache = { at: 0, body: null };
+let statusInFlight = null;
+
+/** One probe round per minute however many visitors ask. */
+function getStatus() {
+  if (statusCache.body && Date.now() - statusCache.at < STATUS_TTL_MS) {
+    return Promise.resolve(statusCache.body);
+  }
+  if (!statusInFlight) {
+    statusInFlight = Promise.all(
+      Object.entries(PROBES).map(async ([id, url]) => [id, { ok: await probe(url) }]),
+    )
+      .then((entries) => {
+        const body = { checkedAt: new Date().toISOString(), products: Object.fromEntries(entries) };
+        statusCache = { at: Date.now(), body };
+        return body;
+      })
+      .finally(() => { statusInFlight = null; });
+  }
+  return statusInFlight;
+}
 
 /**
  * Coarse per-IP throttle. In memory, so it resets on redeploy — enough to stop a
@@ -193,6 +282,14 @@ async function handleEnquiry(req, res) {
 
 createServer((req, res) => {
   const path = (req.url || '/').split('?')[0];
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+
+  if (path === '/api/status') {
+    if (req.method !== 'GET') return json(res, 405, { ok: false, message: 'Method not allowed.' });
+    return getStatus()
+      .then((body) => json(res, 200, body))
+      .catch(() => json(res, 503, { ok: false }));
+  }
 
   if (path === '/api/enquiry') {
     if (req.method !== 'POST') return json(res, 405, { ok: false, message: 'Method not allowed.' });
@@ -206,6 +303,10 @@ createServer((req, res) => {
   }
 
   assets(req, res, () => {
+    if (NOT_FOUND) {
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      return res.end(NOT_FOUND);
+    }
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Not found');
   });

@@ -1,0 +1,24 @@
+---
+/**
+ * "In production" / "In development".
+ *
+ * The text is what is known at build time. For a production project whose id
+ * has a health check in server.mjs, the page's status script upgrades the pill
+ * to "Live now" with a pulsing dot — but only on a PASSING check. A failing or
+ * unreachable check leaves the build-time text alone: the site never announces
+ * an outage to a prospect.
+ */
+interface Props {
+  status: 'production' | 'building';
+  /** Project id; matched against the keys /api/status returns. */
+  probe?: string;
+}
+
+const { status, probe } = Astro.props;
+const live = status === 'production';
+---
+
+<span class:list={['status', live && 'is-live']} data-probe={live ? probe : undefined}>
+  <span class="status-dot" aria-hidden="true"></span>
+  <span class="status-text">{live ? 'In production' : 'In development'}</span>
+</span>

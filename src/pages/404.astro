@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHead from '../components/PageHead.astro';
+---
+
+<Base
+  title="Page not found"
+  description="That page does not exist on the LMI Automata Labs site. Everything we have built is one click away."
+>
+  <PageHead
+    eyebrow="404"
+    title="This page does not exist."
+    lede="It may have moved when the site was rebuilt. Everything we have built is one click away."
+  >
+    <div class="btn-row rise" style="--d: 3">
+      <a class="btn" href="/">Go to the homepage</a>
+      <a class="btn btn-ghost" href="/work/">See the products</a>
+    </div>
+  </PageHead>
+  <div class="spacer" aria-hidden="true"></div>
+</Base>
+
+<style>
+  .spacer { min-height: 20vh; }
+</style>

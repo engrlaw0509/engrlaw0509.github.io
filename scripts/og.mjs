@@ -9,7 +9,7 @@
  * to force a re-fetch.
  */
 import { mkdir } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
@@ -56,8 +56,9 @@ try {
   await mkdir(path.dirname(OUT), { recursive: true });
   await sharp(raw).resize(1200, 630).png({ compressionLevel: 9 }).toFile(OUT);
 
-  const { width, height, size } = await sharp(OUT).metadata();
-  console.log(`public/og.png  ${width}x${height}  ${Math.round(size / 1024)}kB`);
+  // sharp reports `size` only for buffers, so read it from the file itself.
+  const { width, height } = await sharp(OUT).metadata();
+  console.log(`public/og.png  ${width}x${height}  ${Math.round(statSync(OUT).size / 1024)}kB`);
 } finally {
   await browser.close();
 }
