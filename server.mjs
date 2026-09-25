@@ -280,9 +280,25 @@ async function handleEnquiry(req, res) {
   }
 }
 
+/**
+ * The bare domain answers with a permanent redirect to www, keeping the path.
+ * www is canonical (every canonical tag, og:image and the sitemap name it), so
+ * the bare domain never serves a page of its own. 308 rather than 301 for
+ * anything but GET/HEAD, so a POST is not silently turned into a GET.
+ */
+const BARE_HOST = 'lmiautomatalabs.com';
+const CANONICAL = 'https://www.lmiautomatalabs.com';
+
 createServer((req, res) => {
   const path = (req.url || '/').split('?')[0];
   for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.setHeader(k, v);
+
+  const host = (req.headers.host || '').toLowerCase().replace(/:\d+$/, '');
+  if (host === BARE_HOST) {
+    const code = req.method === 'GET' || req.method === 'HEAD' ? 301 : 308;
+    res.writeHead(code, { Location: CANONICAL + (req.url || '/'), 'Cache-Control': 'public, max-age=86400' });
+    return res.end();
+  }
 
   if (path === '/api/status') {
     if (req.method !== 'GET') return json(res, 405, { ok: false, message: 'Method not allowed.' });
