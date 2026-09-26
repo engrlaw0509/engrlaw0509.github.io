@@ -90,29 +90,22 @@ system:
     value: Google or password · clients by magic link
     state: ok
 
-updates:
-  - date: 2026-09-24
-    title: MDRT, Court of the Table and Top of the Table standings on every adviser's dashboard
-  - date: 2026-09-24
-    title: Goals planned for the whole year at once, broken into quarters and months
-  - date: 2026-09-24
-    title: Nightly encrypted off-site backups, with a restore drill every Sunday
-  - date: 2026-09-24
-    title: The circle of life, drawn with the client's own ages
-  - date: 2026-09-23
-    title: Fund prices update from the insurers' own websites
-  - date: 2026-09-22
-    title: An agency event goes straight into everybody's calendar
-  - date: 2026-09-22
-    title: Incentives show who is already winning them
-  - date: 2026-09-15
-    title: Quarterly client statements an adviser can opt into
-  - date: 2026-09-15
-    title: The agency's own name and mark on everything that leaves the building
-  - date: 2026-09-14
-    title: Focus time — a timer with a target for the day
-  - date: 2026-09-13
-    title: Joint fieldwork lands on both advisers' calendars
+latest:
+  - date: 2026-09-26
+    title: Opportunities, found in your own records
+    body: >-
+      Family named on a client's policies and their circle of influence become a task, a
+      meeting or a new contact in one tap — always as an introduction the client makes.
+  - date: 2026-09-26
+    title: A guide on every page
+    body: >-
+      Every screen has a Guide explaining how it works, step by step, with a worked example,
+      so a new adviser is never left guessing.
+  - date: 2026-09-26
+    title: Forms you can send, withdraw and file
+    body: >-
+      Send a form to a client or a recruit, withdraw it without deleting it, and file it when
+      it is finished — with who sent each one always shown.
 
 stack:
   - Next.js

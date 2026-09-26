@@ -10,8 +10,8 @@ import { glob } from 'astro/loaders';
  *     cover.png         <- card and hero image
  *     01-something.png  <- gallery images, referenced from `gallery`
  *
- * Drop a folder in and the project appears on the homepage, on /work/, in the
- * changelog, and at its own page. Nothing else needs editing.
+ * Drop a folder in and the project appears on the homepage, on /work/ and at
+ * its own page. Nothing else needs editing.
  */
 const projects = defineCollection({
   loader: glob({
@@ -81,18 +81,24 @@ const projects = defineCollection({
         .default([]),
 
       /**
-       * What shipped, newest first. Feeds this project's page, the homepage
-       * "Shipping log" and /changelog/. Write it for the owner, not the commit
-       * log: what they can now do, not what the code does.
+       * The newest features, newest first — AT MOST THREE. The first one is this
+       * project's entry in the homepage "What's new" row; all of them show on the
+       * project page.
+       *
+       * Deliberately not a history (the owner's call, 26 Sep 2026): when
+       * something new ships, it goes on top and the oldest drops off. Only real
+       * functionality belongs here — no fixes, no internal changes. The max(3)
+       * is what stops this turning back into a change log.
        */
-      updates: z
+      latest: z
         .array(
           z.object({
             date: z.coerce.date(),
             title: z.string(),
-            body: z.string().optional(),
+            body: z.string(),
           }),
         )
+        .max(3)
         .default([]),
 
       /** Named plainly; the detail page lists these small and last. */

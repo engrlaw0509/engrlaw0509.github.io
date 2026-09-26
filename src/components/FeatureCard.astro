@@ -1,0 +1,93 @@
+---
+import { fmtMonYear, isoDay } from '../lib/projects';
+
+/**
+ * One recently added feature. With `project`, the whole card links to that
+ * product (the homepage "What's new" row); without it, it is a plain card on
+ * the product's own page, and `newest` tags the most recent one.
+ */
+interface Props {
+  title: string;
+  body: string;
+  date: Date;
+  project?: { id: string; name: string };
+  newest?: boolean;
+}
+
+const { title, body, date, project, newest = false } = Astro.props;
+---
+
+<article class="fcard edge spot">
+  <div class="fcard-top">
+    {project ? (
+      <span class="fcard-proj">{project.name}</span>
+    ) : newest ? (
+      <span class="fcard-new">New</span>
+    ) : (
+      <span></span>
+    )}
+    <time class="fcard-date" datetime={isoDay(date)}>{fmtMonYear(date)}</time>
+  </div>
+  <h3 class="fcard-title">
+    {project ? <a class="fcard-link" href={`/work/${project.id}/`}>{title}</a> : title}
+  </h3>
+  <p class="fcard-body">{body}</p>
+  {project && (
+    <span class="fcard-more" aria-hidden="true">
+      See {project.name}
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
+        <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6"
+          stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
+  )}
+</article>
+
+<style>
+  .fcard {
+    position: relative;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    height: 100%;
+    padding: clamp(1.25rem, 2.4vw, 1.6rem);
+    border-radius: var(--r-xl);
+  }
+  .fcard:has(.fcard-link:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .fcard-top { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .fcard-proj, .fcard-new {
+    font-family: var(--f-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .fcard-new {
+    padding: 0.25rem 0.55rem;
+    border-radius: var(--r-pill);
+    background: var(--grad);
+    color: var(--on-accent);
+    font-size: 0.625rem;
+  }
+  .fcard-date { font-family: var(--f-mono); font-size: 0.6875rem; color: var(--ink-3); white-space: nowrap; }
+
+  .fcard-title { font-size: 1.0625rem; font-weight: 650; letter-spacing: -0.02em; line-height: 1.35; }
+  .fcard-link { color: var(--ink); text-decoration: none; }
+  /* The whole card is the link target; its accessible name stays the title. */
+  .fcard-link::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+  .fcard-link:focus-visible { outline: none; }
+  .fcard-body { color: var(--ink-2); font-size: 0.9375rem; }
+
+  .fcard-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.35rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--accent);
+  }
+  .fcard-more svg { transition: transform 200ms var(--ease); }
+  .fcard:hover .fcard-more svg { transform: translateX(3px); }
+</style>

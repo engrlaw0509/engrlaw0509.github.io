@@ -26,7 +26,6 @@ const path = Astro.url.pathname;
 const nav = [
   { href: '/work/', label: 'Products' },
   { href: '/services/', label: 'Services' },
-  { href: '/changelog/', label: 'Changelog' },
   { href: '/contact/', label: 'Contact' },
 ];
 const isActive = (href: string) => path === href || (href !== '/' && path.startsWith(href));
@@ -206,7 +205,7 @@ const org = {
       <nav class="footer-col" aria-label="Company">
         <span class="footer-h">Company</span>
         <a href="/services/">Services</a>
-        <a href="/changelog/">Changelog</a>
+        <a href="/#whats-new">What&rsquo;s new</a>
         <a href="/contact/">Contact</a>
       </nav>
 

@@ -300,6 +300,13 @@ createServer((req, res) => {
     return res.end();
   }
 
+  // The full changelog was retired on 26 Sep 2026 (only the latest features are
+  // shown now); an old link lands on the homepage's "What's new" instead.
+  if (path === '/changelog' || path === '/changelog/') {
+    res.writeHead(301, { Location: '/#whats-new', 'Cache-Control': 'public, max-age=86400' });
+    return res.end();
+  }
+
   if (path === '/api/status') {
     if (req.method !== 'GET') return json(res, 405, { ok: false, message: 'Method not allowed.' });
     return getStatus()

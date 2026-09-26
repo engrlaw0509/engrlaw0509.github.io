@@ -90,23 +90,22 @@ system:
     value: Counter screens being built
     state: wip
 
-updates:
-  - date: 2026-09-21
-    title: The back office says plainly what it may not do, instead of failing
+latest:
   - date: 2026-09-07
-    title: A way back in for a cafe locked out of its own POS
+    title: A way back in for a locked-out cafe
+    body: >-
+      If a cafe loses access to its own POS, a fresh registration code can be issued from the
+      console, so the owner gets back in without losing anything.
   - date: 2026-09-07
-    title: Plans that include things, so a small cafe gets a small product
+    title: Plans that include only what a cafe needs
+    body: >-
+      Each plan ticks exactly what it includes, so a small cafe gets a small product instead
+      of paying for a chain's.
   - date: 2026-08-30
-    title: The documents a BIR examiner asks for, and a receipt to test the printer with
-  - date: 2026-08-30
-    title: Billing and charging that run without anybody pressing anything
-  - date: 2026-08-27
-    title: Saved cards, and an invoice that pays itself when it comes due
-  - date: 2026-08-27
-    title: Payroll on the statutory tables, and a payslip that is a document
-  - date: 2026-08-27
-    title: The books — what went out, and whether the month made anything
+    title: The pack a BIR examiner asks for
+    body: >-
+      The documents an examiner wants to see, produced by the system itself, and a test
+      receipt to check the printer with.
 
 stack:
   - TypeScript

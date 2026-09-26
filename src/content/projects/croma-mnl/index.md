@@ -67,8 +67,8 @@ features:
       rewards.
   - title: Labels, designed and printed in-house
     body: >-
-      A label designer with QR codes, barcodes and dates, batch printing from a spreadsheet,
-      and a second Bluetooth printer just for labels.
+      A label designer with QR codes, barcodes and dates, and batch printing from a
+      spreadsheet, all printed straight from the POS.
 
 system:
   - key: database
@@ -90,29 +90,23 @@ system:
     value: Nightly and off-site, with a tested restore
     state: ok
 
-updates:
+latest:
+  - date: 2026-09-25
+    title: An owners' schedule, hour by hour
+    body: >-
+      The owners plot when they are at the café or available — one-off or as a weekly
+      routine — and see for every open hour whether someone is there, with the gaps spelled
+      out.
   - date: 2026-09-23
-    title: The buying list keeps every version, and is safe with several owners editing at once
+    title: A buying list several owners can edit at once
+    body: >-
+      Every edit is kept until it is saved or discarded, each line says who added it, and the
+      database keeps every version.
   - date: 2026-09-21
-    title: A label designer with QR codes, barcodes and batch printing, on a second Bluetooth printer
-  - date: 2026-09-16
-    title: Receipts carry the shop's wordmark, and printer settings live on the POS
-  - date: 2026-09-10
-    title: Members can pay for advance orders online
-  - date: 2026-09-04
-    title: WiFi codes become a members' reward
-  - date: 2026-09-03
-    title: Scan to pay with store credit, and top-ups in two taps
-  - date: 2026-09-02
-    title: Recipes suggest a selling price at the target margin
-  - date: 2026-08-30
-    title: Instant e-wallet top-ups through PayMongo
-  - date: 2026-08-20
-    title: A points ledger, and Silver, Gold and Platinum membership tiers
-  - date: 2026-08-15
-    title: A nightly backup that leaves the building, with a tested way back
-  - date: 2026-08-06
-    title: Moved off spreadsheets onto Postgres — 45 ms median, no failed requests
+    title: Labels, designed and printed from the POS
+    body: >-
+      A label designer with QR codes, barcodes and dates, plus batch printing from a
+      spreadsheet — printed straight from the POS on the counter.
 
 stack:
   - Postgres
@@ -134,7 +128,7 @@ gallery:
 
 Croma MNL started as one cafe in Manila and grew into five connected pieces that share one
 database: the point of sale on the counter, the admin panel behind it, a members' app, the
-public website, and an Android app that drives the receipt and label printers directly.
+public website, and an Android app that drives the receipt printer directly.
 
 The first version ran on Google Sheets, which was fine for one shop and became the limiting
 factor as the business grew. In August 2026 it moved onto Postgres in Singapore. Measured

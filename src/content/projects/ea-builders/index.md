@@ -77,23 +77,22 @@ system:
     value: Clients in by magic link · two-way enquiry threads
     state: ok
 
-updates:
+latest:
   - date: 2026-08-08
-    title: Attendance logged on site fills the pay run
+    title: Attendance that fills the pay run
+    body: >-
+      The crew is marked present on site and the pay run fills itself, with a whole period's
+      payslips printed six to a page.
   - date: 2026-08-08
-    title: Project profitability — is this job making money, and will it still be
+    title: Profit per project, as costs land
+    body: >-
+      Each project shows whether it is making money — and whether it still will — while there
+      is time to act on it.
   - date: 2026-08-08
-    title: A company materials catalogue, site inventory, and where each item is in use
-  - date: 2026-08-08
-    title: A whole period's payslips, printed six to a page
-  - date: 2026-08-07
-    title: A critical-path scheduler, with projects grouped by pipeline stage
-  - date: 2026-08-05
-    title: A document-templates library, with the four legal drafts in Philippine legal form
-  - date: 2026-07-29
-    title: Two-way enquiry threads with clients, through a magic link
-  - date: 2026-07-27
-    title: Capability-based roles, and full project management inside the admin
+    title: Materials and machines, traced to each site
+    body: >-
+      A company catalogue, the stock sitting on each site, and where every item and piece of
+      plant is in use.
 
 stack:
   - Next.js

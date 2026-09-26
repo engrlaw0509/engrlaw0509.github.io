@@ -28,7 +28,7 @@ indexes `dist/` when it starts and will 404 on files built after that.
 ## Adding a project
 
 One project is one folder. Nothing outside it needs editing — the homepage, `/work/`, the
-changelog, the footer and the project's own page all pick it up automatically.
+footer and the project's own page all pick it up automatically.
 
 ```
 src/content/projects/<slug>/
@@ -54,7 +54,7 @@ The fields that matter most:
 | `featured` | Puts it in the large cards on the homepage. The first featured project gets the wide card. |
 | `order` | Sorts everything. Lower first. |
 | `highlights` | Three or four short proof points. More than four wraps badly. |
-| `updates` | What shipped, newest first. Feeds the project page, the homepage log and `/changelog/`. |
+| `latest` | The **three** newest features, newest first. The first is the product's card in the homepage "What's new" row; all three show on its page. |
 | `system` | The terminal panel: engineering facts, one per line, `ok` / `wip` / `info`. |
 | `site` / `host` | The public site ("Visit …") and the host shown in the screenshot's address bar. |
 
@@ -75,13 +75,18 @@ isolation" in the copy, even though the second one is what makes the first true.
 claimed" band (`stats` in `src/pages/index.astro`) names where each figure comes from.
 When one changes in its project, change it there too.
 
-### Updates and the changelog
+### Latest features — never a history
 
-`updates` entries are dated days (`2026-09-24`) written for the person who uses the
-product: what they can now do, not what the code does. Leave out fixes, incidents and
-anything internal — "restored the purchases lost on the 19th" is a commit message, not a
-changelog entry. The homepage shows the newest **two per project**, so one busy product
-cannot fill the list.
+The site shows only what is **newest**, not everything that has changed (the owner's
+call, 26 Sep 2026 — the full changelog page was removed, and `/changelog/` now redirects to
+the homepage's "What's new"). Each product keeps at most **three** `latest` entries, and
+the schema enforces the limit (`.max(3)`), so the list cannot quietly grow back into a log.
+
+When something ships: add it at the top and drop the oldest. Each entry is a dated day
+(`2026-09-26`), a title and one or two sentences, written for the person who uses the
+product — what they can now do, not what the code does. Only real functionality belongs
+here: no fixes, no refactors, nothing internal. "Restored the purchases lost on the 19th"
+is a commit message, not a feature.
 
 ---
 
@@ -273,52 +278,56 @@ through Google instead.
 
 ## Domain and hosting
 
-`lmiautomatalabs.com`, registered at Namecheap. It is served from **two** places, and that
-is deliberate:
+`lmiautomatalabs.com`, registered at Namecheap, DNS on Namecheap's free BasicDNS.
 
 | Address | Served by | Role |
 |---|---|---|
 | `www.lmiautomatalabs.com` | **Railway** | **Canonical.** The real site, with `/api`. |
-| `lmiautomatalabs.com` | GitHub Pages | Same build; **redirects visitors to `www`** |
+| `lmiautomatalabs.com` | GitHub Pages | Same build; the inline script at the top of `Base.astro`'s `<head>` **forwards visitors to `www`** |
 | `engrlaw0509.github.io` | GitHub Pages | 301 to the apex |
 
-The apex redirect is a one-line inline script at the top of `Base.astro`'s `<head>`,
-because GitHub Pages cannot redirect a custom apex to a subdomain itself — and Pages has no
-`/api`, so the enquiry form and live status would not work there.
-
-**Why not put the apex on Railway?** Railway routes custom domains by CNAME, and a DNS zone
-apex cannot hold a CNAME — the apex must carry `SOA` and `NS`, and a CNAME may not coexist
-with other records on the same name. Providers work around it with non-standard `ALIAS` /
-`ANAME` / CNAME-flattening records, and **Namecheap BasicDNS has none of them**. GitHub
-Pages works at the apex only because it publishes fixed anycast IPs, so plain `A` records
-are legal.
-
-Moving the apex to Railway later needs either Namecheap **PremiumDNS** (which does support
-`ALIAS`) or Cloudflare DNS (CNAME flattening). Then it is:
-
-| Type | Host | Value |
-|---|---|---|
-| ALIAS | `@` | `8zhq5c29.up.railway.app` |
-| TXT | `_railway-verify` | `railway-verify=b1773a1867aee56a899fd6b429cc0014eff70a0343b2cb47ba0aec3fecf497a3` |
-
-### Current DNS at Namecheap (BasicDNS)
+### DNS at Namecheap (as of 26 Sep 2026)
 
 | Type | Host | Value |
 |---|---|---|
 | A ×4 | `@` | `185.199.108.153`, `.109.153`, `.110.153`, `.111.153` (GitHub) |
+| TXT | `_railway-verify` | `railway-verify=b1773a1867aee56a899fd6b429cc0014eff70a0343b2cb47ba0aec3fecf497a3` (apex ownership, for the move below) |
 | CNAME | `www` | `4j96l1ma.up.railway.app` (Railway) |
-| TXT | `_railway-verify.www` | `railway-verify=2062aa…aec26` (Railway ownership) |
+| TXT | `_railway-verify.www` | `railway-verify=2062aa…aec26` (www ownership) |
 
-All four A records are required — they are GitHub's four edge addresses, not
-alternatives. Namecheap writes `@` as the apex; do not type the domain name in the Host
-field.
+All four A records are required while the apex is on GitHub — they are its four edge
+addresses, not alternatives. Namecheap writes `@` as the apex; do not type the domain
+name in the Host field.
+
+### Moving the apex to Railway (ready, not done)
+
+**Namecheap BasicDNS does support `ALIAS` records** (an earlier version of this README said
+otherwise), and Railway accepts a dynamic ALIAS for a root domain. The move is two DNS
+edits: delete the four A records, and add `ALIAS @ → 8zhq5c29.up.railway.app`. The apex
+ownership TXT is already in place, and `server.mjs` already answers the bare domain with a
+**301 to `www`** (path kept) the moment it arrives.
+
+Railway verifies a domain only when the routing record **and** the TXT both point at it —
+the TXT alone was visible publicly for over an hour on 25 Sep with no progress — so its
+certificate cannot be prepared in advance. Expect the bare domain to show a certificate
+error until Railway catches up; if it does not within about 30 minutes, put the four A
+records back and delete the ALIAS to return to the setup above. After the move, delete
+`.github/workflows/deploy.yml` and `public/CNAME` once nothing links to the github.io
+address any more.
+
+**Never leave an ALIAS beside A records on the same name.** Both are answered, so browsers
+pick among all of them. That is how this site broke on 25 Sep 2026: an ALIAS to Railway sat
+beside GitHub's four A records, one lookup in five landed on Railway, and Railway — with no
+apex ownership TXT, so no certificate — served its generic `*.up.railway.app` certificate.
+Visitors got a privacy error intermittently, which made it look random. Check every address
+a name returns, not just whether one request works.
 
 **Railway custom domains need that TXT record, and the Railway MCP does not mention it** —
 it reports only the CNAME. Always read the requirements from the CLI instead, which lists
 both:
 
 ```bash
-railway domain status www.lmiautomatalabs.com --project <id> --service web
+railway domain status www.lmiautomatalabs.com --project <id> --environment <id> --service web
 ```
 
 Without the TXT the domain sits in `VALIDATING_OWNERSHIP` indefinitely, and
@@ -333,8 +342,7 @@ the apex — and it hides behind the **SHOW MORE** button in Advanced DNS.
 ### Two hosts means two pipelines
 
 Pushing to `main` deploys to both: Railway builds and serves `www`, and the GitHub Actions
-workflow publishes the apex. They build from the same commit, so they stay in step. If you
-ever move the apex to Railway, delete `.github/workflows/deploy.yml` and `public/CNAME`.
+workflow publishes the apex. They build from the same commit, so they stay in step.
 
 ### After a design or domain change
 

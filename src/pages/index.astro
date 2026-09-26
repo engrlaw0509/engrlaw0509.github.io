@@ -4,16 +4,17 @@ import Base from '../layouts/Base.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import BrowserFrame from '../components/BrowserFrame.astro';
 import Marquee from '../components/Marquee.astro';
-import UpdateList from '../components/UpdateList.astro';
-import { getProjects, allUpdates, latestPerProject } from '../lib/projects';
+import FeatureCard from '../components/FeatureCard.astro';
+import { getProjects, newestPerProject } from '../lib/projects';
 
 const projects = await getProjects();
 const featured = projects.filter((p) => p.data.featured);
 const rest = projects.filter((p) => !p.data.featured);
 const [lead, ...pair] = featured;
 const liveCount = projects.filter((p) => p.data.status === 'production').length;
-const updates = allUpdates(projects);
-const latest = updates[0];
+/** The newest feature in each product — never a history. */
+const news = newestPerProject(projects);
+const latest = news[0];
 
 /** Explicitly chosen in the project's index.md — see `hero` in content.config.ts. */
 const heroShot = projects.find((p) => p.data.hero && p.data.cover);
@@ -48,7 +49,7 @@ const stack = [
 
     <div class="wrap hero-inner">
       {latest && (
-        <a class="announce rise" href="/changelog/">
+        <a class="announce rise" href={`/work/${latest.project.id}/`}>
           <span class="announce-tag">New</span>
           <span class="announce-text">
             <strong>{latest.project.name}</strong> &middot; {latest.title}
@@ -382,28 +383,27 @@ const stack = [
     </div>
   </section>
 
-  <!-- ============ CHANGELOG ============ -->
-  <section class="section section-alt">
-    <div class="wrap log">
-      <div class="section-head log-head reveal">
-        <p class="eyebrow">Changelog</p>
-        <h2 class="h-lg ink-fade">Always shipping</h2>
-        <p class="lede">
-          Every product here is still being worked on. The latest, across all four.
-        </p>
-        <a class="link-arrow" href="/changelog/">
-          Full changelog
-          <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true">
-            <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6"
-              stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </a>
+  <!-- ============ WHAT'S NEW ============ -->
+  {news.length > 0 && (
+    <section class="section section-alt" id="whats-new">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <p class="eyebrow">What&rsquo;s new</p>
+          <h2 class="h-lg ink-fade">The latest in each product</h2>
+          <p class="lede">
+            Every product here is still being improved. This is the newest feature in each.
+          </p>
+        </div>
+        <div class="news">
+          {news.map((f) => (
+            <div class="reveal">
+              <FeatureCard title={f.title} body={f.body} date={f.date} project={f.project} />
+            </div>
+          ))}
+        </div>
       </div>
-      <div class="card-surface log-list reveal">
-        <UpdateList items={latestPerProject(updates, 2)} showProject />
-      </div>
-    </div>
-  </section>
+    </section>
+  )}
 
   <!-- ============ CTA ============ -->
   <section class="section">
@@ -899,13 +899,12 @@ const stack = [
   .stat-u { font-size: 0.45em; color: var(--ink-3); letter-spacing: -0.02em; }
   .stat-l { color: var(--ink-2); font-size: 0.9375rem; max-width: 26ch; }
 
-  /* ---------------- changelog ---------------- */
-  .log { display: grid; gap: 2rem; }
-  @media (min-width: 64rem) {
-    .log { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 4rem; align-items: start; }
-    .log-head { position: sticky; top: 6rem; margin-bottom: 0; }
+  /* ---------------- what's new ---------------- */
+  .news {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16.5rem), 1fr));
   }
-  .log-list { padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1rem, 2.5vw, 1.75rem); }
 
   /* ---------------- cta ---------------- */
   .cta {
