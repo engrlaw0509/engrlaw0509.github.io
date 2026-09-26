@@ -121,10 +121,10 @@ stack:
 cover: ./cover.webp
 gallery:
   - src: ./01-today.webp
-    alt: Sentro's Today screen, listing the follow-ups an adviser promised, each with the client's name and what was agreed
+    alt: Sentro's Today screen, showing progress on the month's goal and the follow-ups an adviser promised, each with the client's name and what was agreed
     caption: >-
-      The list an adviser starts the day with — the same one that goes out by email each
-      morning, here whether or not that arrived.
+      The list an adviser starts the day with, beside how the month's goal is going. Swipe a
+      line to tick it off or add a note, and it writes back to the record it came from.
   - src: ./02-goals.webp
     alt: The Goals screen, showing a year's premium target broken into quarters and months with progress for each
     caption: >-
@@ -136,6 +136,11 @@ gallery:
       Where everybody stands this year, and which units are producing qualifiers. MDRT,
       Court of the Table and Top of the Table are marks of the Million Dollar Round Table;
       Sentro is independent of it.
+  - src: ./04-recruitment.webp
+    alt: Sentro's recruitment board, with a Do next list of the most urgent recruits above columns from Prospect through Invited, Attended and Requirements
+    caption: >-
+      Recruitment as a board you work, from first conversation to coded agent. Every card
+      says how long that person has been stuck and what to do next.
 ---
 
 Sentro is sold as a subscription to agencies and to independent advisers rather than to

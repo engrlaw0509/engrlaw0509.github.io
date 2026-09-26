@@ -144,7 +144,7 @@ port, where to write, an optional login, and the list of pages to shoot.
 
 | Project | Screenshots | Why |
 |---|---|---|
-| Sentro | 4, from Sentro's own set | Copied from `advisor-web/public/screens/` (captured 22–24 Sep 2026 against its **Northstar demo agency** — every name and amount invented). Its `portal` and `policies` shots are **left out on purpose**: they show real insurer and product names. Re-copy when Sentro re-shoots. |
+| Sentro | 5, from Sentro's own set | Copied from `advisor-web/public/screens/` (retaken 26 Sep 2026 against its **Northstar demo agency** — every name and amount invented): `dashboard` → `cover`, `today`, `goals`, `mdrt`, `recruitment`. Its `portal`, `policies` and `client` shots are **left out on purpose**: they show real insurer and product names (the client page lists PRULink and PRUHealth policies). `forms` is an empty state. Re-copy when Sentro re-shoots, and look at each one first. |
 | EA Builders | 4, captured | Only via the built-in mock adapter — see the warning below. |
 | Croma MNL | 2 — supplied by hand | The operations dashboard is from a signed-in admin session at `app.cromamnl.com`. **It shows real revenue figures, not seed data** — unlike every other shot on the site. |
 | Kaha | None | Its API needs a real Postgres and has no mock mode, and there is no counter UI yet. The `system` terminal stands in. The `kaha` entry in `capture.mjs` has the commands. |
