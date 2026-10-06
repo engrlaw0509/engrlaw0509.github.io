@@ -64,7 +64,7 @@ const lastUpdate = d.latest[0]?.date;
               </svg>
             </a>
           )}
-          <a class:list={['btn', d.site && 'btn-ghost']} href="/contact/">Build something like this</a>
+          <a class:list={['btn', d.site && 'btn-ghost']} href="/contact/">Discuss your project</a>
         </div>
 
         {(d.platforms.length > 0 || lastUpdate) && (
@@ -236,7 +236,7 @@ const lastUpdate = d.latest[0]?.date;
           <div class="bg-grid" aria-hidden="true"></div>
           <h2 class="h-lg ink-fade">Could your business use something like this?</h2>
           <div class="btn-row">
-            <a class="btn" href="/contact/">Start a project</a>
+            <a class="btn" href="/contact/">Discuss your project</a>
             {next.id !== project.id && (
               <a class="btn btn-ghost" href={`/work/${next.id}/`}>
                 Next: {next.data.name}
@@ -264,6 +264,8 @@ const lastUpdate = d.latest[0]?.date;
     gap: 0.5rem;
   }
   .crumb a { color: var(--ink-3); text-decoration: none; }
+  /* A full-height tap target without moving the line. */
+  .crumb a { padding-block: 0.8rem; margin-block: -0.8rem; }
   .crumb a:hover { color: var(--accent); }
   .crumb [aria-current] { color: var(--ink-2); }
   .title-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
@@ -292,6 +294,7 @@ const lastUpdate = d.latest[0]?.date;
     color: var(--ink-3);
   }
   .meta dd { margin: 0; color: var(--ink-2); font-size: 0.9375rem; }
+  @media (max-width: 40rem) { .meta dt { font-size: 0.6875rem; } }
 
   .shot-hero { margin-top: clamp(2.25rem, 5vw, 3.5rem); }
   .shot-hero :global(img) { aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }

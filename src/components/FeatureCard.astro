@@ -71,6 +71,7 @@ const { title, body, date, project, newest = false } = Astro.props;
     font-size: 0.625rem;
   }
   .fcard-date { font-family: var(--f-mono); font-size: 0.6875rem; color: var(--ink-3); white-space: nowrap; }
+  @media (max-width: 40rem) { .fcard-new { font-size: 0.6875rem; } }
 
   .fcard-title { font-size: 1.0625rem; font-weight: 650; letter-spacing: -0.02em; line-height: 1.35; }
   .fcard-link { color: var(--ink); text-decoration: none; }

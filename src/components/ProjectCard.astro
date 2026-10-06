@@ -18,6 +18,8 @@ interface Props {
 const { project, layout = 'tall', eager = false } = Astro.props;
 const d = project.data;
 const href = `/work/${project.id}/`;
+// Only products that have a public website get a "Visit" link — never invent one.
+const siteHost = d.site ? new URL(d.site).host.replace(/^www\./, '') : undefined;
 const sizes =
   layout === 'wide'
     ? '(min-width: 64rem) 50rem, 92vw'
@@ -55,6 +57,14 @@ const sizes =
     <p class="pcard-sector">{d.sector}</p>
     <p class="pcard-summary">{d.summary}</p>
 
+    {/* Key capabilities: the first three entries of the product's own
+        `features`, so nothing here can say more than its page does. */}
+    {d.features.length > 0 && (
+      <ul class="pcard-caps" aria-label={`${d.name}: key capabilities`}>
+        {d.features.slice(0, 3).map((f) => <li>{f.title}</li>)}
+      </ul>
+    )}
+
     {d.highlights.length > 0 && (
       <ul class="pcard-points">
         {d.highlights.slice(0, 3).map((h) => (
@@ -63,13 +73,24 @@ const sizes =
       </ul>
     )}
 
-    <span class="pcard-more" aria-hidden="true">
-      Explore {d.name}
-      <svg viewBox="0 0 16 16" width="15" height="15" fill="none">
-        <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6"
-          stroke-linecap="round" stroke-linejoin="round" />
-      </svg>
-    </span>
+    <div class="pcard-foot">
+      <span class="pcard-more" aria-hidden="true">
+        Explore {d.name}
+        <svg viewBox="0 0 16 16" width="15" height="15" fill="none">
+          <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </span>
+      {siteHost && (
+        <a class="pcard-site" href={d.site} rel="noopener">
+          Visit {siteHost}
+          <svg viewBox="0 0 16 16" width="13" height="13" fill="none" aria-hidden="true">
+            <path d="M5 11 11 5M6 5h5v5" stroke="currentColor" stroke-width="1.6"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </a>
+      )}
+    </div>
   </div>
 </article>
 
@@ -179,6 +200,37 @@ const sizes =
     letter-spacing: -0.02em;
   }
 
+  .pcard-caps {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.9375rem;
+    color: var(--ink-2);
+  }
+  .pcard-caps li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.6rem;
+    align-items: baseline;
+    text-wrap: pretty; /* no single word stranded on its own line */
+  }
+  .pcard-caps li::before {
+    content: '✓';
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--live);
+  }
+
+  .pcard-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 1.25rem;
+    margin-top: 0.5rem;
+  }
   .pcard-more {
     display: inline-flex;
     align-items: center;
@@ -186,10 +238,26 @@ const sizes =
     font-weight: 600;
     font-size: 0.9375rem;
     color: var(--accent);
-    margin-top: 0.5rem;
   }
   .pcard-more svg { transition: transform 200ms var(--ease); }
   .pcard:hover .pcard-more svg { transform: translateX(3px); }
+
+  /* The live site, as a second, real link. It sits above the card-wide link
+     (z-index 2 over the ::after at 1) so a tap on it goes to the product's own
+     website rather than to its page here. */
+  .pcard-site {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    font-family: var(--f-mono);
+    font-size: 0.8125rem;
+    color: var(--ink-2);
+    text-decoration: none;
+  }
+  .pcard-site:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 0.2em; }
 
   /* ---------------- wide ---------------- */
   @media (min-width: 64rem) {

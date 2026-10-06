@@ -75,7 +75,7 @@ const stack = [
 
       <div class="btn-row hero-cta rise" style="--d: 3">
         <a class="btn btn-lg" href="/contact/">
-          Start a project
+          Discuss your project
           <svg class="arrow" viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
             <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7"
               stroke-linecap="round" stroke-linejoin="round" />
@@ -420,7 +420,7 @@ const stack = [
         </p>
         <div class="btn-row cta-row">
           <a class="btn btn-lg" href="/contact/">
-            Start a project
+            Discuss your project
             <svg class="arrow" viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true">
               <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7"
                 stroke-linecap="round" stroke-linejoin="round" />
@@ -485,6 +485,20 @@ const stack = [
   .announce-text strong { color: var(--ink); font-weight: 600; }
   .announce svg { flex: none; transition: transform 200ms var(--ease); }
   .announce:hover svg { transform: translateX(3px); }
+  /* On a phone the one-line pill could only end in "…" mid-sentence; let the
+     news wrap instead, as a rounded panel, and keep it a full-size target. */
+  @media (max-width: 30rem) {
+    .announce {
+      align-items: flex-start;
+      min-height: 2.75rem;
+      padding: 0.5rem 0.85rem 0.5rem 0.5rem;
+      border-radius: var(--r-lg);
+      text-align: left;
+    }
+    .announce-text { white-space: normal; overflow: visible; line-height: 1.45; padding-top: 0.12rem; }
+    .announce-tag { font-size: 0.6875rem; }
+    .announce svg { margin-top: 0.3rem; }
+  }
 
   .hero-title { display: grid; }
   .hero-lede { max-width: 60ch; }

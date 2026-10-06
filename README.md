@@ -54,9 +54,10 @@ The fields that matter most:
 | `featured` | Puts it in the large cards on the homepage. The first featured project gets the wide card. |
 | `order` | Sorts everything. Lower first. |
 | `highlights` | Three or four short proof points. More than four wraps badly. |
+| `features` | What the owner can do, one plain sentence each. **The first three are the product's "key capabilities" on its card**, so put the strongest first. |
 | `latest` | The **three** newest features, newest first. The first is the product's card in the homepage "What's new" row; all three show on its page. |
 | `system` | The terminal panel: engineering facts, one per line, `ok` / `wip` / `info`. |
-| `site` / `host` | The public site ("Visit …") and the host shown in the screenshot's address bar. |
+| `site` / `host` | The public site — the "Visit …" link on the card and the page — and the host shown in the screenshot's address bar. Leave `site` out when a product has no public website; never point it somewhere private. |
 
 Every gallery image needs `alt`. It is read aloud by screen readers and shown if the
 image fails, so describe what is in the picture rather than repeating the caption.
@@ -74,6 +75,14 @@ isolation" in the copy, even though the second one is what makes the first true.
 **Every number must be measured, counted or tested.** The homepage "Measured, not
 claimed" band (`stats` in `src/pages/index.astro`) names where each figure comes from.
 When one changes in its project, change it there too.
+
+**The contact call to action is "Discuss your project"** everywhere (the owner's
+wording, 6 Oct 2026), and it always goes to `/contact/` — the enquiry form.
+
+**Each service answers the same three questions** — what we build, the problem it
+solves, who it is for — in `src/components/ServiceDiagram.astro`, plus one "From our
+work" example. That example must be true of a product on this site; check the product's
+`index.md` before changing it.
 
 ### Latest features — never a history
 

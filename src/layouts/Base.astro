@@ -136,7 +136,7 @@ const org = {
         </button>
 
         <a class="btn btn-sm cta" href="/contact/">
-          Start a project
+          Discuss your project
           <svg class="arrow" viewBox="0 0 16 16" width="14" height="14" fill="none" aria-hidden="true">
             <path d="M3 8h9M8.5 4.5 12 8l-3.5 3.5" stroke="currentColor" stroke-width="1.7"
               stroke-linecap="round" stroke-linejoin="round" />
@@ -165,7 +165,7 @@ const org = {
                 </a>
               ))}
             </nav>
-            <a class="btn" href="/contact/">Start a project</a>
+            <a class="btn" href="/contact/">Discuss your project</a>
           </div>
         </details>
       </div>
@@ -365,6 +365,9 @@ const org = {
       font-size: 1rem;
       letter-spacing: -0.025em;
       flex: none;
+      /* A 44px target; the header and footer around it are taller, so this
+         changes nothing you can see. */
+      min-height: 2.75rem;
     }
     .brand:hover { color: var(--ink); }
     /* A background, not an <img>, so only the mark for the active theme is
@@ -413,6 +416,9 @@ const org = {
       transition: color 160ms var(--ease), border-color 160ms var(--ease), background-color 160ms var(--ease);
     }
     .icon-btn:hover { color: var(--ink); border-color: var(--line-2); background: var(--surface-2); }
+    /* Where these two buttons are the whole of the navigation, make them full
+       44px thumb targets. Desktop keeps its 40px. */
+    @media (max-width: 51.99rem) { .icon-btn { width: 2.75rem; height: 2.75rem; } }
 
     /* The toggle needs script; hide it until the head script has run. */
     .theme-toggle { display: none; }
@@ -504,6 +510,13 @@ const org = {
       overflow-wrap: anywhere;
     }
     .footer-col a:hover { color: var(--ink); }
+    /* On a phone the footer links are stacked tightly enough to mis-tap; give
+       each a 44px row instead of spacing them apart. */
+    @media (max-width: 40rem) {
+      .footer-col { gap: 0; }
+      .footer-col a { padding-block: 0.65rem; }
+      .footer-h { margin-bottom: 0.1rem; }
+    }
 
     .footer-base {
       position: relative;

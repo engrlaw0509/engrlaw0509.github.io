@@ -519,6 +519,9 @@ p { margin: 0; text-wrap: pretty; }
 .frame-url svg { flex: none; opacity: 0.8; }
 .frame-url span { overflow: hidden; text-overflow: ellipsis; }
 .frame-spacer { width: 2.6rem; flex: none; }
+/* On a narrow phone the balancing spacer is worth more as room for the host —
+   without it "app.mysentroapp.com" ends in "…" at 320px. */
+@media (max-width: 30rem) { .frame-spacer { display: none; } }
 .frame img { width: 100%; }
 .frame-lg { border-radius: var(--r-xl); box-shadow: 0 0 0 1px var(--line), 0 40px 120px -48px var(--glow), var(--shadow-lg); }
 
