@@ -2,7 +2,7 @@
 name: Kaha
 sector: Cafes & small chains
 status: building
-order: 4
+order: 5
 featured: false
 platforms:
   - POS

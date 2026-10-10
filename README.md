@@ -112,6 +112,7 @@ however many visitors ask, and answers `GET /api/status`:
 |---|---|---|
 | `sentro` | `https://app.mysentroapp.com/api/health` | The app answers **and** its database round-trips |
 | `croma-mnl` | `https://api.cromamnl.com/health` | Same, plus it reports its own DB latency |
+| `tarashare` | `https://tarashare.app/api/health` | Only that the app answers (and which commit) — it does not touch the database |
 
 Two rules are deliberate:
 
@@ -156,6 +157,7 @@ port, where to write, an optional login, and the list of pages to shoot.
 | Sentro | 5, from Sentro's own set | Copied from `advisor-web/public/screens/` (retaken 26 Sep 2026 against its **Northstar demo agency** — every name and amount invented): `dashboard` → `cover`, `today`, `goals`, `mdrt`, `recruitment`. Its `portal`, `policies` and `client` shots are **left out on purpose**: they show real insurer and product names (the client page lists PRULink and PRUHealth policies). `forms` is an empty state. Re-copy when Sentro re-shoots, and look at each one first. |
 | EA Builders | 4, captured | Only via the built-in mock adapter — see the warning below. |
 | Croma MNL | 2 — supplied by hand | The operations dashboard is from a signed-in admin session at `app.cromamnl.com`. **It shows real revenue figures, not seed data** — unlike every other shot on the site. |
+| Tarashare | 5, from its **public** pages | Shot from https://tarashare.app (signed out, light mode, 1440×900 at 1.25×) on 10 Oct 2026: the landing hero → `cover`, three landing sections, and `/pricing`. Every name and amount in them is the site's own example. The signed-in app was not shot: production holds real families' groups, and the local dev server would not render (it reloads itself in a loop). Re-shoot when the landing page changes. |
 | Kaha | None | Its API needs a real Postgres and has no mock mode, and there is no counter UI yet. The `system` terminal stands in. The `kaha` entry in `capture.mjs` has the commands. |
 
 ### EA Builders: start the dev server in demo mode

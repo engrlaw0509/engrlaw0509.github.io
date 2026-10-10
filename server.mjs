@@ -87,6 +87,7 @@ const SECURITY_HEADERS = {
 const PROBES = {
   sentro: 'https://app.mysentroapp.com/api/health',
   'croma-mnl': 'https://api.cromamnl.com/health',
+  tarashare: 'https://tarashare.app/api/health',
 };
 const STATUS_TTL_MS = 60_000;
 const PROBE_TIMEOUT_MS = 5_000;
